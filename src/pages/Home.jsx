@@ -57,7 +57,7 @@ export default function Home() {
     <main className="home-page">
       <section className="home-header">
         <p className="eyebrow">My Tabs</p>
-        <h1>Your clean tab library.</h1>
+        <h1>Fretz</h1>
         <p className="home-subtitle">
           Search songs, save them to your list, and open tabs without the clutter.
         </p>

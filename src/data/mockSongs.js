@@ -1,27 +1,5 @@
 
-const MOCK_SONGS = [
-  {
-    id: "wonderwall-oasis",
-    title: "Wonderwall",
-    artist: "Oasis",
-    tuning: "Standard",
-    difficulty: "Beginner",
-    capo: "Capo 2",
-    tab: `[Intro]
-Em7  G  Dsus4  A7sus4
-
-[Verse]
-Em7        G
-Today is gonna be the day
-              Dsus4                  A7sus4
-That they're gonna throw it back to you
-
-[Chorus]
-Cadd9    Dsus4   Em7
-Because maybe
-G        Em7
-You're gonna be the one that saves me`,
-  },
+export const MOCK_SONGS = [
   {
     id: "black-parade-mcr",
     title: "Welcome to the Black Parade",
@@ -83,3 +61,4 @@ E|-----------------------|
 C  G  Am  F`,
   },
 ];
+
