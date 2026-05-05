@@ -39,6 +39,7 @@ export default function Home() {
     difficulty: "",
     capo: "",
     tab: "",
+    fontSize: 14,
   });
 
   const [playlistSong, setPlaylistSong] = useState(null);
@@ -129,6 +130,7 @@ export default function Home() {
       difficulty: song.difficulty || "",
       capo: song.capo || "",
       tab: song.tab || "",
+      fontSizePx: song.fontSizePx || 14,
     });
 
     setOpenMenuId(null);
@@ -154,6 +156,7 @@ export default function Home() {
       difficulty: editForm.difficulty.trim() || "Beginner",
       capo: editForm.capo.trim() || "No capo",
       tab: editForm.tab.trim(),
+      fontSizePx: Number(editForm.fontSizePx) || 14,
       updatedAt: new Date().toISOString(),
     });
 
@@ -545,6 +548,22 @@ export default function Home() {
                 />
               </label>
             </div>
+
+            <label>
+              Tab font size px
+              <input
+                type="number"
+                min="8"
+                max="40"
+                value={editForm.fontSizePx}
+                onChange={(event) =>
+                  setEditForm((currentForm) => ({
+                    ...currentForm,
+                    fontSizePx: event.target.value,
+                  }))
+                }
+              />
+            </label>
 
             <label>
               Tab

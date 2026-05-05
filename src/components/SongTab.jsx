@@ -10,7 +10,7 @@ export default function SongTab({ song, onClose }) {
           </div>
 
           <div>
-            <p className="eyebrow">Now Viewing</p>
+            {/* <p className="eyebrow">Now Viewing</p> */}
             <h2>{song.title}</h2>
             <p>{song.artist}</p>
           </div>
@@ -27,7 +27,13 @@ export default function SongTab({ song, onClose }) {
         <span>{song.difficulty}</span>
       </div>
 
-      <pre className="tab-content">{song.tab}</pre>
+      <pre
+        className="tab-content"
+        style={{ fontSize: `${song.fontSizePx || 14}px` }}
+      >
+        {song.tab}
+      </pre>
+      
     </section>
   );
 }

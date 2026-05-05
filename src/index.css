@@ -263,7 +263,7 @@ body {
   width: 58px;
   height: 58px;
   font-size: 1.35rem;
-  border-radius: 18px;
+  border-radius: 10px;
 }
 
 .song-text {
@@ -1099,10 +1099,10 @@ body {
   border: 0;
   border-radius: 999px;
 
-  padding: 11px 15px;
+  padding: 10px 15px;
 
-  font: inherit;
-  font-weight: 800;
+  font: 0.7rem;
+  font-weight: 700;
 
   cursor: pointer;
 }
