@@ -22,6 +22,7 @@ import { MOCK_SONGS } from "../data/mockSongs";
 export default function Home() {
   const [query, setQuery] = useState("");
   const [showSavedCount, setShowSavedCount] = useState(true);
+  const [editingSongKey, setEditingSongKey] = useState(null);
 
   const [newSongForm, setNewSongForm] = useState({
     title: "",
@@ -62,7 +63,7 @@ export default function Home() {
     difficulty: "",
     capo: "",
     tab: "",
-    fontSize: 14,
+    fontSizePx: 14,
   });
 
   const [playlistSong, setPlaylistSong] = useState(null);
@@ -109,7 +110,7 @@ export default function Home() {
         }).map((song) => ({
           ...song,
           source: "hardcoded",
-          imageUrl: song.imageUrl || "",
+          imageUrl: getSongImageUrl(song),
           fontSizePx: song.fontSizePx || 14,
         }));
 
@@ -139,7 +140,7 @@ export default function Home() {
         }).map((song) => ({
           ...song,
           source: "hardcoded",
-          imageUrl: song.imageUrl || "",
+          imageUrl: getSongImageUrl(song),
           fontSizePx: song.fontSizePx || 14,
         }));
 
@@ -275,16 +276,14 @@ export default function Home() {
 
   function normalizeImportedSong(song) {
     return {
-      id:
-        song.id ||
-        `imported-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      id: song.id || createSongId(song, "imported"),
       title: song.title || "Untitled Song",
       artist: song.artist || "Unknown Artist",
       tuning: song.tuning || "Standard",
       difficulty: song.difficulty || "Beginner",
       capo: song.capo || "No capo",
       tab: song.tab || `[${song.title || "Untitled Song"}]\n\nAdd your chords or tab here.`,
-      imageUrl: song.imageUrl || "",
+      imageUrl: getSongImageUrl(song),
       addedAt: song.addedAt || new Date().toISOString(),
       playlists: Array.isArray(song.playlists) ? song.playlists : [],
       pinned: Boolean(song.pinned),
@@ -298,11 +297,11 @@ export default function Home() {
     const songMap = new Map();
 
     existingSongs.forEach((song) => {
-      songMap.set(song.id, song);
+      songMap.set(getSongKey(song), song);
     });
 
     importedSongs.forEach((song) => {
-      songMap.set(song.id, song);
+      songMap.set(getSongKey(song), song);
     });
 
     return Array.from(songMap.values());
@@ -380,6 +379,26 @@ export default function Home() {
 
 
 
+  function getSongKey(song) {
+    return (
+      song?.id ||
+      `${song?.title || "untitled"}-${song?.artist || "unknown"}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+    );
+  }
+  function createSongId(song, prefix = "song") {
+    const title = song?.title || "untitled";
+    const artist = song?.artist || "unknown";
+
+    const slug = `${title}-${artist}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    return `${prefix}-${slug || Date.now()}`;
+  }
 
   async function handleCreateSong(event) {
     event.preventDefault();
@@ -450,12 +469,14 @@ export default function Home() {
   function updateSongById(songId, updates) {
     setSavedSongs((currentSongs) =>
       currentSongs.map((song) =>
-        song.id === songId ? { ...song, ...updates } : song
+        getSongKey(song) === songId ? { ...song, ...updates } : song
       )
     );
 
     setSelectedSong((currentSong) =>
-      currentSong?.id === songId ? { ...currentSong, ...updates } : currentSong
+      currentSong && getSongKey(currentSong) === songId
+        ? { ...currentSong, ...updates }
+        : currentSong
     );
   }
 
@@ -482,9 +503,10 @@ export default function Home() {
         return;
       }
 
-      updateSongById(song.id, {
+      updateSongById(getSongKey(song), {
         imageUrl,
       });
+
     } catch (error) {
       console.error(error);
       alert("Something went wrong while fetching album art.");
@@ -493,6 +515,7 @@ export default function Home() {
 
   function handleEditTab(song) {
     setEditingSong(song);
+    setEditingSongKey(getSongKey(song));
 
     setEditForm({
       title: song.title || "",
@@ -520,7 +543,7 @@ export default function Home() {
       return;
     }
 
-    updateSongById(editingSong.id, {
+    updateSongById(getSongKey(editingSong), {
       title: cleanedTitle,
       artist: cleanedArtist,
       tuning: editForm.tuning.trim() || "Standard",
@@ -563,7 +586,7 @@ export default function Home() {
           if (playlist.id !== existingPlaylist.id) return playlist;
 
           const alreadyInPlaylist = playlist.songs.some(
-            (song) => song.id === playlistSong.id
+            (song) => getSongKey(song) === getSongKey(playlistSong)
           );
 
           if (alreadyInPlaylist) return playlist;
@@ -589,7 +612,7 @@ export default function Home() {
       return [...currentPlaylists, newPlaylist];
     });
 
-    updateSongById(playlistSong.id, {
+    updateSongById(getSongKey(playlistSong), {
       playlists: Array.from(
         new Set([...(playlistSong.playlists || []), cleanedPlaylistName])
       ),
@@ -600,6 +623,8 @@ export default function Home() {
   }
 
   function handlePinToTop(song) {
+    const songKey = getSongKey(song);
+
     setSavedSongs((currentSongs) => {
       const updatedSong = {
         ...song,
@@ -608,14 +633,14 @@ export default function Home() {
       };
 
       const songsWithoutPinned = currentSongs.filter(
-        (savedSong) => savedSong.id !== song.id
+        (savedSong) => getSongKey(savedSong) !== songKey
       );
 
       return [updatedSong, ...songsWithoutPinned];
     });
 
     setSelectedSong((currentSong) =>
-      currentSong?.id === song.id
+      currentSong && getSongKey(currentSong) === songKey
         ? {
             ...currentSong,
             pinned: true,
@@ -633,13 +658,16 @@ export default function Home() {
 
 
   function addSong(song) {
-    const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
+    const alreadySaved = savedSongs.some(
+      (savedSong) => getSongKey(savedSong) === getSongKey(song)
+    );
 
     if (alreadySaved) return;
 
     const songToSave = {
       ...song,
-      imageUrl: song.imageUrl || "",
+      id: song.id || createSongId(song, song.source || "song"),
+      imageUrl: getSongImageUrl(song),
       tab:
         song.tab ||
         `[${song.title}]
@@ -660,17 +688,17 @@ export default function Home() {
     if (!shouldRemove) return;
 
     setSavedSongs((currentSongs) =>
-      currentSongs.filter((song) => song.id !== songId)
+      currentSongs.filter((song) => getSongKey(song) !== songId)
     );
 
     setPlaylists((currentPlaylists) =>
       currentPlaylists.map((playlist) => ({
         ...playlist,
-        songs: playlist.songs.filter((song) => song.id !== songId),
+        songs: playlist.songs.filter((song) => getSongKey(song) !== songId),
       }))
     );
 
-    if (selectedSong?.id === songId) {
+    if (selectedSong && getSongKey(selectedSong) === songId) {
       setSelectedSong(null);
     }
 
@@ -678,7 +706,7 @@ export default function Home() {
   }
 
   function isSongSaved(songId) {
-    return savedSongs.some((song) => song.id === songId);
+    return savedSongs.some((song) => getSongKey(song) === songId);
   }
 
   return (
@@ -718,7 +746,7 @@ export default function Home() {
               <p className="empty-message">{searchError}</p>
             ) : searchResults.length > 0 ? (
               searchResults.map((song) => (
-                <article className="search-result-card" key={song.id}>
+                <article className="search-result-card" key={getSongKey(song)}>
                   <div className="song-icon">
                     {getSongImageUrl(song) ? (
                       <img
@@ -746,9 +774,9 @@ export default function Home() {
                   <button
                     className="add-song-button"
                     onClick={() => addSong(song)}
-                    disabled={isSongSaved(song.id)}
+                    disabled={isSongSaved(getSongKey(song))}
                   >
-                    {isSongSaved(song.id) ? "Added" : <FiPlus />}
+                    {isSongSaved(getSongKey(song)) ? "Added" : <FiPlus />}
                   </button>
                 </article>
               ))
@@ -824,9 +852,9 @@ export default function Home() {
             {savedSongs.map((song) => (
               <article
                 className={`saved-song-card ${
-                  selectedSong?.id === song.id ? "selected" : ""
+                  selectedSong && getSongKey(selectedSong) === getSongKey(song) ? "selected" : ""
                 }`}
-                key={song.id}
+                key={getSongKey(song)}
               >
                 <button
                   className="saved-song-main"
@@ -864,13 +892,13 @@ export default function Home() {
                 <div className="song-actions">
                   <button
                     className="song-menu-button"
-                    onClick={() => toggleSongMenu(song.id)}
+                    onClick={() => toggleSongMenu(getSongKey(song))}
                     aria-label={`Open menu for ${song.title}`}
                   >
                     <FiMoreVertical />
                   </button>
 
-                  {openMenuId === song.id && (
+                  {openMenuId === getSongKey(song) && (
                     <div className="song-menu">
                       <button onClick={() => handleOpenSong(song)}>
                         <FiEye />
@@ -899,7 +927,7 @@ export default function Home() {
 
                       <button
                         className="danger"
-                        onClick={() => removeSong(song.id)}
+                        onClick={() => removeSong(getSongKey(song))}
                       >
                         <FiTrash2 />
                         <span>Remove</span>
@@ -935,7 +963,10 @@ export default function Home() {
               <button
                 type="button"
                 className="modal-close-button"
-                onClick={() => setEditingSong(null)}
+                onClick={() => {
+                  setEditingSong(null);
+                  setEditingSongKey(null);
+                }}
               >
                 <FiX />
               </button>
@@ -1041,7 +1072,10 @@ export default function Home() {
               <button
                 type="button"
                 className="secondary-button"
-                onClick={() => setEditingSong(null)}
+                onClick={() => {
+                  setEditingSong(null);
+                  setEditingSongKey(null);
+                }}
               >
                 Cancel
               </button>
