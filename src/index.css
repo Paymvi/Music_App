@@ -7,10 +7,25 @@
   --accent: #a855f7;
   --shadow: 0 -8px 30px rgba(0, 0, 0, 0.35);
 }
-body {
+
+
+html,
+body,
+#root {
+  min-height: 100%;
   margin: 0;
+  background: #08090d;
+  overflow-x: hidden;
+}
+
+body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+* {
+  box-sizing: border-box;
+}
+
 
 /* ═══════════════════════════════════════════════
    🔻 BOTTOM TAB NAVIGATION
@@ -109,7 +124,9 @@ body {
 
 /* Prevent page content from hiding behind tabbar */
 .app {
+  min-height: 100dvh;
   padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  background: #08090d;
 }
 
 
@@ -464,10 +481,10 @@ body {
 
 /* Overall page gets closer to the reference */
 .home-page {
+  min-height: 100dvh;
   padding: 22px 0 120px;
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.16), transparent 34%),
-    #08090d;
+  color: var(--text);
+  background: #08090d;
 }
 
 /* Keep content edge-to-edge-ish like a mobile app */
@@ -858,6 +875,7 @@ body,
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  background-color: #08090d;
 }
 
 * {
@@ -906,6 +924,7 @@ body,
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+  background: rgba(9, 10, 14, 0.96);
 }
 
 /* Mobile-specific tighter layout */
