@@ -1,13 +1,23 @@
 /* ----------------- */
 
 .fretz-logo {
-  display: block;
+
   width: min(140px, 85vw);
   height: auto;
   object-fit: contain;
   padding: 12px 8px 8px;
-  
+
 }
+
+.home-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  margin-bottom: 18px;
+}
+
 
 :root {
   --text: #f8fafc;
@@ -48,22 +58,21 @@ body {
   bottom: 0;
   z-index: 50;
 
-  min-height: 76px;
-  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  min-height: 58px;
+  padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
 
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
 
-  background: rgba(9, 10, 14, 0.88);
+  background: rgba(9, 10, 14, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.35);
+  border-top: none;
+  box-shadow: none;
 }
 
-/* Each tab */
 .tab {
   position: relative;
 
@@ -75,14 +84,13 @@ body {
   align-items: center;
   justify-content: center;
 
-  min-height: 54px;
-  border-radius: 16px;
+  min-height: 46px;
+  border-radius: 12px;
 
   transition:
     transform 0.1s ease,
     background 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease;
+    color 0.15s ease;
 }
 
 .tab:hover {
@@ -94,41 +102,40 @@ body {
   transform: scale(0.96);
 }
 
-/* Active tab */
 .tab.active {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
-/* Tiny active indicator */
-.tab.active::before {
+/* Purple Line */
+/* .tab.active::before {
   content: "";
   position: absolute;
-  top: 6px;
+  top: 4px;
 
-  width: 24px;
+  width: 22px;
   height: 3px;
   border-radius: 999px;
 
-  background: var(--accent, #a855f7);
-}
+  background: var(--accent);
+} */
 
 .tab-icon {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 22px;
+  font-size: 19px;
   line-height: 1;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .tab-label {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
-  margin-top: 6px;
-  letter-spacing: 0.25px;
+  margin-top: 4px;
+  letter-spacing: 0.2px;
 }
 
 /* Prevent page content from hiding behind tabbar */
