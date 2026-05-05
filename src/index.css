@@ -1213,7 +1213,7 @@ body {
   padding: 9px 12px;
 
   color: white;
-  background: rgb(168, 56, 172);
+  background: rgb(174, 76, 181);
 
   font: inherit;
   font-size: 0.82rem;
@@ -1246,7 +1246,7 @@ body {
 
 .speed-control input {
   width: 100%;
-  accent-color: rgb(168, 56, 172);
+  accent-color: rgb(174, 76, 181);
 }
 
 .speed-control strong {

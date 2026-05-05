@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchAlbumArt } from "../api/albumArt";
 
 import {
   FiSearch,
@@ -98,26 +99,24 @@ export default function Home() {
     );
   }
 
-  function handleOpenSong(song) {
-    setSelectedSong(song);
-    setOpenMenuId(null);
-  }
-
-  function handleAddImage(song) {
-    const imageUrl = window.prompt(
-      `Paste an image URL for "${song.title}".\n\nExample: an album cover image link`
-    );
-
-    if (!imageUrl || !imageUrl.trim()) {
+  async function handleAddImage(song) {
+    try {
       setOpenMenuId(null);
-      return;
+
+      const imageUrl = await fetchAlbumArt(song.title, song.artist);
+
+      if (!imageUrl) {
+        alert("Could not find album art for this song.");
+        return;
+      }
+
+      updateSongById(song.id, {
+        imageUrl,
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while fetching album art.");
     }
-
-    updateSongById(song.id, {
-      imageUrl: imageUrl.trim(),
-    });
-
-    setOpenMenuId(null);
   }
 
   function handleEditTab(song) {
@@ -435,7 +434,7 @@ export default function Home() {
 
                       <button onClick={() => handleAddImage(song)}>
                         <FiImage />
-                        <span>Add image</span>
+                        <span>Find album art</span>
                       </button>
 
                       <button
