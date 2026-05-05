@@ -118,26 +118,15 @@ body {
    🎸 HOME / MY TABS PAGE
    ═══════════════════════════════════════════════ */
 
-.home-page {
-  min-height: 100vh;
-  padding: 28px 18px 120px;
-  color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.18), transparent 34%),
-    radial-gradient(circle at top right, rgba(236, 72, 153, 0.12), transparent 30%),
-    #090a0e;
-}
 
-.home-header {
-  max-width: 760px;
-  margin: 0 auto 24px;
-}
+
+
 
 .eyebrow {
   margin: 0 0 8px;
   color: var(--accent);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
@@ -160,36 +149,15 @@ body {
 
 /* Search */
 
-.search-panel,
-.library-section,
-.song-tab-panel {
-  max-width: 760px;
-  margin: 0 auto;
-}
 
 .search-box {
   display: flex;
   align-items: center;
   gap: 12px;
-
-  min-height: 58px;
   padding: 0 16px;
 
-  border: 1px solid var(--border);
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
 }
 
-.search-icon {
-  color: var(--accent);
-  font-size: 1.25rem;
-  flex-shrink: 0;
-}
 
 .search-box input {
   width: 100%;
@@ -202,7 +170,7 @@ body {
 }
 
 .search-box input::placeholder {
-  color: rgba(148, 163, 184, 0.8);
+  color: rgba(164, 161, 179, 0.8);
 }
 
 .clear-search-button,
@@ -321,96 +289,6 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* Saved library */
-
-.library-section {
-  margin-top: 34px;
-}
-
-.section-title-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.section-title-row h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 1.4rem;
-  letter-spacing: -0.04em;
-}
-
-.section-title-row p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.saved-song-list {
-  display: grid;
-  gap: 10px;
-}
-
-.saved-song-card {
-  padding: 6px;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    transform 0.1s ease;
-}
-
-.saved-song-card:hover {
-  background: rgba(255, 255, 255, 0.075);
-}
-
-.saved-song-card.selected {
-  border-color: rgba(168, 85, 247, 0.65);
-  background: rgba(168, 85, 247, 0.1);
-}
-
-.saved-song-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  flex: 1;
-  min-width: 0;
-  padding: 8px;
-
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-}
-
-.song-arrow {
-  color: var(--muted);
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.remove-song-button {
-  display: grid;
-  place-items: center;
-
-  width: 38px;
-  height: 38px;
-  margin-right: 4px;
-
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-}
-
-.remove-song-button:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
-}
-
 .empty-library,
 .empty-message {
   color: var(--muted);
@@ -477,13 +355,19 @@ body {
 .song-tab-title h2 {
   margin: 0;
   color: var(--text);
-  font-size: 1.45rem;
-  letter-spacing: -0.04em;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
 }
 
 .song-tab-title p {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.song-tab-title .eyebrow {
+  font-size: 0.60rem;
+  margin-bottom: 4px;
 }
 
 .close-tab-button {
@@ -534,7 +418,7 @@ body {
   background: rgba(0, 0, 0, 0.32);
 
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.65;
   white-space: pre;
 }
@@ -569,7 +453,7 @@ body {
   }
 
   .tab-content {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -615,7 +499,7 @@ body {
 
 /* Search bar: wide pill like Ultimate Guitar */
 .search-box {
-  min-height: 64px;
+  min-height: 3rem;
   padding: 0 22px;
   border-radius: 999px;
 
@@ -625,7 +509,7 @@ body {
 }
 
 .search-box input {
-  font-size: 1.08rem;
+  font-size: 0.9rem;
 }
 
 .search-icon {
@@ -722,7 +606,7 @@ body {
   border-color: transparent;
   background: rgba(168, 85, 247, 0.095);
 }
-
+/* 
 .saved-song-card.selected::before {
   content: "";
   position: absolute;
@@ -732,7 +616,7 @@ body {
   width: 4px;
   border-radius: 999px;
   background: var(--accent);
-}
+} */
 
 /* Clickable main part */
 .saved-song-main {
@@ -743,7 +627,7 @@ body {
 
   width: 100%;
   min-height: 92px;
-  padding: 12px 0;
+  padding: 12px 12px;
 
   border: 0;
   background: transparent;
@@ -788,61 +672,6 @@ body {
   line-height: 1.15;
 }
 
-/* Turn arrow area into a UG-like "Chords" tag */
-.saved-song-card .song-arrow {
-  display: none;
-}
-
-.saved-song-main::after {
-  content: "Chords";
-
-  justify-self: end;
-
-  padding: 6px 9px;
-  margin-left: 10px;
-
-  border: 1px solid rgba(168, 85, 247, 0.32);
-  border-radius: 3px;
-
-  color: rgba(248, 250, 252, 0.72);
-  background: rgba(255, 255, 255, 0.025);
-
-  font-size: 0.82rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-/* Remove button should feel hidden until hover/focus */
-.remove-song-button {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-
-  width: 34px;
-  height: 34px;
-  margin-right: 0;
-
-  color: rgba(148, 163, 184, 0.5);
-  background: rgba(8, 9, 13, 0.72);
-  opacity: 0;
-
-  transition:
-    opacity 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-/* Leave room so remove button does not cover Chords tag too badly */
-.saved-song-card:hover .remove-song-button,
-.saved-song-card:focus-within .remove-song-button {
-  opacity: 1;
-}
-
-.remove-song-button:hover {
-  color: #f8fafc;
-  background: rgba(168, 85, 247, 0.55);
-}
 
 /* Empty state less card-like */
 .empty-library {
@@ -858,94 +687,6 @@ body {
 .song-tab-panel {
   margin-top: 26px;
 }
-
-/* Mobile version */
-@media (max-width: 560px) {
-  .home-page {
-    padding-top: 18px;
-  }
-
-  .home-header,
-  .search-panel,
-  .library-section,
-  .song-tab-panel {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .home-header h1 {
-    font-size: 2.25rem;
-  }
-
-  .home-subtitle {
-    font-size: 0.95rem;
-  }
-
-  .search-box {
-    min-height: 58px;
-    padding: 0 18px;
-  }
-
-  .search-box input {
-    font-size: 0.75rem;
-  }
-
-  .section-title-row {
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-
-  .saved-song-card {
-    min-height: 84px;
-  }
-
-  .saved-song-card::after {
-    left: 76px;
-  }
-
-  .saved-song-main {
-    grid-template-columns: 52px minmax(0, 1fr) auto;
-    gap: 12px;
-    min-height: 84px;
-    padding: 10px 0;
-  }
-
-  .saved-song-card .song-icon {
-    width: 52px;
-    height: 52px;
-  }
-
-  .saved-song-card .song-text h3 {
-    font-size: 1.18rem;
-  }
-
-  .saved-song-card .song-text p {
-    font-size: 0.98rem;
-  }
-
-  .saved-song-main::after {
-    padding: 5px 8px;
-    font-size: 0.76rem;
-  }
-
-  .remove-song-button {
-    right: -4px;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1100,24 +841,123 @@ body {
   display: none;
 }
 
-/* Mobile adjustments */
+
+
+
+
+
+
+/* ═══════════════════════════════════════════════
+   📱 MOBILE OVERFLOW FIX + SMALLER SONG TEXT
+   ═══════════════════════════════════════════════ */
+
+/* Prevent sideways scrolling */
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* Smaller saved song text */
+.saved-song-card .song-text h3 {
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.saved-song-card .song-text p {
+  font-size: 0.88rem;
+  line-height: 1.15;
+  margin-top: 5px;
+}
+
+/* Slightly smaller album art square */
+.saved-song-card .song-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+}
+
+/* Adjust row grid for smaller mobile layout */
+.saved-song-main {
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+}
+
+
+
+/* If your old remove button is still in the JSX/CSS, keep it hidden */
+.remove-song-button {
+  display: none !important;
+}
+
+/* Fix tabbar width on phones */
+.tabbar {
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Mobile-specific tighter layout */
 @media (max-width: 560px) {
+  .home-page {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 120px;
+  }
+
+  .home-header h1 {
+    font-size: 2rem;
+  }
+
+  .home-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .search-box {
+    min-height: 2.7rem;
+    padding: 0 16px;
+  }
+
+  .search-box input {
+    font-size: 0.85rem;
+  }
+
+  .saved-song-card {
+    min-height: 74px;
+  }
+
+  .saved-song-card::after {
+    left: 62px;
+  }
+
   .saved-song-main {
-    grid-template-columns: 52px minmax(0, 1fr);
-    padding-right: 8px;
+    min-height: 74px;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 12px;
   }
 
-  .song-actions {
-    padding-right: 2px;
+  .saved-song-card .song-icon {
+    width: 46px;
+    height: 46px;
   }
 
-  .song-menu-button {
-    width: 40px;
-    height: 40px;
+  .saved-song-card .song-text h3 {
+    font-size: 0.95rem;
   }
 
-  .song-menu {
-    right: 2px;
-    min-width: 160px;
+  .saved-song-card .song-text p {
+    font-size: 0.82rem;
   }
 }
