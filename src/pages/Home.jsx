@@ -17,21 +17,56 @@ import {
 import SongTab from "../components/SongTab";
 import { MOCK_SONGS } from "../data/mockSongs";
 
-
 export default function Home() {
   const [query, setQuery] = useState("");
-  const [savedSongs, setSavedSongs] = useState([]);
+  
+  const [savedSongs, setSavedSongs] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("savedSongs")) || [];
+    } catch {
+      return [];
+    }
+  });
+
   const [selectedSong, setSelectedSong] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  const [editingSong, setEditingSong] = useState(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    artist: "",
+    tuning: "",
+    difficulty: "",
+    capo: "",
+    tab: "",
+  });
+
+  const [playlistSong, setPlaylistSong] = useState(null);
+  const [playlistName, setPlaylistName] = useState("");
+
+  const [playlists, setPlaylists] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("playlists")) || [];
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("savedSongs")) || [];
+    const savedPlaylists = JSON.parse(localStorage.getItem("playlists")) || [];
+
     setSavedSongs(saved);
+    setPlaylists(savedPlaylists);
   }, []);
 
   useEffect(() => {
     localStorage.setItem("savedSongs", JSON.stringify(savedSongs));
   }, [savedSongs]);
+
+  useEffect(() => {
+    localStorage.setItem("playlists", JSON.stringify(playlists));
+  }, [playlists]);
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
@@ -50,40 +85,170 @@ export default function Home() {
     setOpenMenuId((currentId) => (currentId === songId ? null : songId));
   }
 
+  function updateSongById(songId, updates) {
+    setSavedSongs((currentSongs) =>
+      currentSongs.map((song) =>
+        song.id === songId ? { ...song, ...updates } : song
+      )
+    );
+
+    setSelectedSong((currentSong) =>
+      currentSong?.id === songId ? { ...currentSong, ...updates } : currentSong
+    );
+  }
+
   function handleOpenSong(song) {
     setSelectedSong(song);
     setOpenMenuId(null);
   }
 
   function handleAddImage(song) {
-    // Placeholder for now.
-    // Later, this can open an image upload modal.
-    console.log("Add image for:", song.title);
+    const imageUrl = window.prompt(
+      `Paste an image URL for "${song.title}".\n\nExample: an album cover image link`
+    );
+
+    if (!imageUrl || !imageUrl.trim()) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    updateSongById(song.id, {
+      imageUrl: imageUrl.trim(),
+    });
+
     setOpenMenuId(null);
   }
 
   function handleEditTab(song) {
-  // Placeholder for now.
-  // Later, this can open an edit modal or route to an edit page.
-  console.log("Edit tab:", song.title);
-  setOpenMenuId(null);
-}
+    setEditingSong(song);
+
+    setEditForm({
+      title: song.title || "",
+      artist: song.artist || "",
+      tuning: song.tuning || "",
+      difficulty: song.difficulty || "",
+      capo: song.capo || "",
+      tab: song.tab || "",
+    });
+
+    setOpenMenuId(null);
+  }
+
+  function handleSaveEdit(event) {
+    event.preventDefault();
+
+    if (!editingSong) return;
+
+    const cleanedTitle = editForm.title.trim();
+    const cleanedArtist = editForm.artist.trim();
+
+    if (!cleanedTitle || !cleanedArtist) {
+      alert("Song title and artist are required.");
+      return;
+    }
+
+    updateSongById(editingSong.id, {
+      title: cleanedTitle,
+      artist: cleanedArtist,
+      tuning: editForm.tuning.trim() || "Standard",
+      difficulty: editForm.difficulty.trim() || "Beginner",
+      capo: editForm.capo.trim() || "No capo",
+      tab: editForm.tab.trim(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    setEditingSong(null);
+  }
 
   function handleAddToPlaylist(song) {
-    // Placeholder for now.
-    // Later, this can open a playlist picker modal.
-    console.log("Add to playlist:", song.title);
+    setPlaylistSong(song);
+    setPlaylistName("");
     setOpenMenuId(null);
+  }
+
+  function handleSaveToPlaylist(event) {
+    event.preventDefault();
+
+    if (!playlistSong) return;
+
+    const cleanedPlaylistName = playlistName.trim();
+
+    if (!cleanedPlaylistName) {
+      alert("Please enter a playlist name.");
+      return;
+    }
+
+    setPlaylists((currentPlaylists) => {
+      const existingPlaylist = currentPlaylists.find(
+        (playlist) =>
+          playlist.name.toLowerCase() === cleanedPlaylistName.toLowerCase()
+      );
+
+      if (existingPlaylist) {
+        return currentPlaylists.map((playlist) => {
+          if (playlist.id !== existingPlaylist.id) return playlist;
+
+          const alreadyInPlaylist = playlist.songs.some(
+            (song) => song.id === playlistSong.id
+          );
+
+          if (alreadyInPlaylist) return playlist;
+
+          return {
+            ...playlist,
+            songs: [...playlist.songs, playlistSong],
+            updatedAt: new Date().toISOString(),
+          };
+        });
+      }
+
+      const newPlaylist = {
+        id:
+          crypto.randomUUID?.() ||
+          `playlist-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: cleanedPlaylistName,
+        songs: [playlistSong],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      return [...currentPlaylists, newPlaylist];
+    });
+
+    updateSongById(playlistSong.id, {
+      playlists: Array.from(
+        new Set([...(playlistSong.playlists || []), cleanedPlaylistName])
+      ),
+    });
+
+    setPlaylistSong(null);
+    setPlaylistName("");
   }
 
   function handlePinToTop(song) {
     setSavedSongs((currentSongs) => {
+      const updatedSong = {
+        ...song,
+        pinned: true,
+        pinnedAt: new Date().toISOString(),
+      };
+
       const songsWithoutPinned = currentSongs.filter(
         (savedSong) => savedSong.id !== song.id
       );
 
-      return [song, ...songsWithoutPinned];
+      return [updatedSong, ...songsWithoutPinned];
     });
+
+    setSelectedSong((currentSong) =>
+      currentSong?.id === song.id
+        ? {
+            ...currentSong,
+            pinned: true,
+            pinnedAt: new Date().toISOString(),
+          }
+        : currentSong
+    );
 
     setOpenMenuId(null);
   }
@@ -93,17 +258,37 @@ export default function Home() {
 
     if (alreadySaved) return;
 
-    setSavedSongs((currentSongs) => [...currentSongs, song]);
+    const songToSave = {
+      ...song,
+      addedAt: new Date().toISOString(),
+      playlists: [],
+      pinned: false,
+    };
+
+    setSavedSongs((currentSongs) => [...currentSongs, songToSave]);
   }
 
   function removeSong(songId) {
+    const shouldRemove = window.confirm("Remove this song from your saved tabs?");
+
+    if (!shouldRemove) return;
+
     setSavedSongs((currentSongs) =>
       currentSongs.filter((song) => song.id !== songId)
+    );
+
+    setPlaylists((currentPlaylists) =>
+      currentPlaylists.map((playlist) => ({
+        ...playlist,
+        songs: playlist.songs.filter((song) => song.id !== songId),
+      }))
     );
 
     if (selectedSong?.id === songId) {
       setSelectedSong(null);
     }
+
+    setOpenMenuId(null);
   }
 
   function isSongSaved(songId) {
@@ -115,9 +300,6 @@ export default function Home() {
       <section className="home-header">
         <p className="eyebrow">My Tabs</p>
         <h1>Fretz</h1>
-        {/* <p className="home-subtitle">
-          Search songs, save them to your list, and open tabs without the clutter.
-        </p> */}
       </section>
 
       <section className="search-panel">
@@ -171,7 +353,10 @@ export default function Home() {
         <div className="section-title-row">
           <div>
             <h2>Saved Songs</h2>
-            <p>{savedSongs.length} saved tab{savedSongs.length === 1 ? "" : "s"}</p>
+            <p>
+              {savedSongs.length} saved tab
+              {savedSongs.length === 1 ? "" : "s"}
+            </p>
           </div>
         </div>
 
@@ -189,11 +374,22 @@ export default function Home() {
                   onClick={() => handleOpenSong(song)}
                 >
                   <div className="song-icon">
-                    <FiMusic />
+                    {song.imageUrl ? (
+                      <img
+                        className="song-cover-image"
+                        src={song.imageUrl}
+                        alt={`${song.title} cover`}
+                      />
+                    ) : (
+                      <FiMusic />
+                    )}
                   </div>
 
                   <div className="song-text">
-                    <h3>{song.title}</h3>
+                    <h3>
+                      {song.pinned && <span className="pin-indicator">★ </span>}
+                      {song.title}
+                    </h3>
                     <p>{song.artist}</p>
                   </div>
                 </button>
@@ -236,10 +432,7 @@ export default function Home() {
 
                       <button
                         className="danger"
-                        onClick={() => {
-                          removeSong(song.id);
-                          setOpenMenuId(null);
-                        }}
+                        onClick={() => removeSong(song.id)}
                       >
                         <FiTrash2 />
                         <span>Remove</span>
@@ -261,6 +454,184 @@ export default function Home() {
 
       {selectedSong && (
         <SongTab song={selectedSong} onClose={() => setSelectedSong(null)} />
+      )}
+
+      {editingSong && (
+        <div className="modal-backdrop">
+          <form className="edit-tab-modal" onSubmit={handleSaveEdit}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">Edit Tab</p>
+                <h2>{editingSong.title}</h2>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={() => setEditingSong(null)}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <label>
+              Song title
+              <input
+                value={editForm.title}
+                onChange={(event) =>
+                  setEditForm((currentForm) => ({
+                    ...currentForm,
+                    title: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Artist
+              <input
+                value={editForm.artist}
+                onChange={(event) =>
+                  setEditForm((currentForm) => ({
+                    ...currentForm,
+                    artist: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <div className="form-grid">
+              <label>
+                Tuning
+                <input
+                  value={editForm.tuning}
+                  onChange={(event) =>
+                    setEditForm((currentForm) => ({
+                      ...currentForm,
+                      tuning: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Capo
+                <input
+                  value={editForm.capo}
+                  onChange={(event) =>
+                    setEditForm((currentForm) => ({
+                      ...currentForm,
+                      capo: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Difficulty
+                <input
+                  value={editForm.difficulty}
+                  onChange={(event) =>
+                    setEditForm((currentForm) => ({
+                      ...currentForm,
+                      difficulty: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <label>
+              Tab
+              <textarea
+                value={editForm.tab}
+                onChange={(event) =>
+                  setEditForm((currentForm) => ({
+                    ...currentForm,
+                    tab: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setEditingSong(null)}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="primary-button">
+                Save changes
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {playlistSong && (
+        <div className="modal-backdrop">
+          <form className="playlist-modal" onSubmit={handleSaveToPlaylist}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">Add to Playlist</p>
+                <h2>{playlistSong.title}</h2>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={() => setPlaylistSong(null)}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <label>
+              Playlist name
+              <input
+                placeholder="Favorites, Practice, Acoustic..."
+                value={playlistName}
+                onChange={(event) => setPlaylistName(event.target.value)}
+              />
+            </label>
+
+            {playlists.length > 0 && (
+              <div className="existing-playlists">
+                <p>Existing playlists</p>
+
+                <div className="playlist-chip-row">
+                  {playlists.map((playlist) => (
+                    <button
+                      type="button"
+                      className="playlist-chip"
+                      key={playlist.id}
+                      onClick={() => setPlaylistName(playlist.name)}
+                    >
+                      {playlist.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setPlaylistSong(null)}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="primary-button">
+                Add song
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </main>
   );
