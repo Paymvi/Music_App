@@ -240,10 +240,12 @@ body {
   border-radius: 18px;
 
   background: rgba(255, 255, 255, 0.055);
+
 }
 
 .search-result-card {
   padding: 12px;
+  
 }
 
 .song-icon {
@@ -253,7 +255,7 @@ body {
   height: 46px;
   flex-shrink: 0;
 
-  border-radius: 15px;
+  border-radius: 8px;
   color: var(--text);
   background:
     linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(236, 72, 153, 0.76));
@@ -263,7 +265,7 @@ body {
   width: 58px;
   height: 58px;
   font-size: 1.35rem;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .song-text {
@@ -274,7 +276,7 @@ body {
 .song-text h3 {
   margin: 0;
   color: var(--text);
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.2;
 
   overflow: hidden;
@@ -285,7 +287,7 @@ body {
 .song-text p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 
   overflow: hidden;
   white-space: nowrap;
@@ -295,14 +297,15 @@ body {
 .add-song-button {
   display: grid;
   place-items: center;
-  min-width: 42px;
-  height: 42px;
+  min-width: 3rem;
+  height: 2.5rem;
   padding: 0 14px;
 
   border-radius: 999px;
   background: var(--accent);
   color: white;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 0.8rem;
 }
 
 .add-song-button:hover:not(:disabled) {
@@ -532,7 +535,7 @@ body {
 
 /* Library header: like the filter/sort row */
 .library-section {
-  margin-top: 28px;
+  margin-top: 20px;
 }
 
 .section-title-row {
@@ -1210,7 +1213,7 @@ body {
   padding: 9px 12px;
 
   color: white;
-  background: var(--accent);
+  background: rgb(168, 56, 172);
 
   font: inherit;
   font-size: 0.82rem;
@@ -1243,7 +1246,7 @@ body {
 
 .speed-control input {
   width: 100%;
-  accent-color: var(--accent);
+  accent-color: rgb(168, 56, 172);
 }
 
 .speed-control strong {
