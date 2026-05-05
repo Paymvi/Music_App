@@ -9,6 +9,9 @@ import {
   FiImage,
   FiTrash2,
   FiEye,
+  FiEdit3,
+  FiList,
+  FiStar,
 } from "react-icons/fi";
 
 import SongTab from "../components/SongTab";
@@ -56,6 +59,32 @@ export default function Home() {
     // Placeholder for now.
     // Later, this can open an image upload modal.
     console.log("Add image for:", song.title);
+    setOpenMenuId(null);
+  }
+
+  function handleEditTab(song) {
+  // Placeholder for now.
+  // Later, this can open an edit modal or route to an edit page.
+  console.log("Edit tab:", song.title);
+  setOpenMenuId(null);
+}
+
+  function handleAddToPlaylist(song) {
+    // Placeholder for now.
+    // Later, this can open a playlist picker modal.
+    console.log("Add to playlist:", song.title);
+    setOpenMenuId(null);
+  }
+
+  function handlePinToTop(song) {
+    setSavedSongs((currentSongs) => {
+      const songsWithoutPinned = currentSongs.filter(
+        (savedSong) => savedSong.id !== song.id
+      );
+
+      return [song, ...songsWithoutPinned];
+    });
+
     setOpenMenuId(null);
   }
 
@@ -183,6 +212,21 @@ export default function Home() {
                       <button onClick={() => handleOpenSong(song)}>
                         <FiEye />
                         <span>Open tab</span>
+                      </button>
+
+                      <button onClick={() => handleEditTab(song)}>
+                        <FiEdit3 />
+                        <span>Edit tab</span>
+                      </button>
+
+                      <button onClick={() => handleAddToPlaylist(song)}>
+                        <FiList />
+                        <span>Add to playlist</span>
+                      </button>
+
+                      <button onClick={() => handlePinToTop(song)}>
+                        <FiStar />
+                        <span>Pin to top</span>
                       </button>
 
                       <button onClick={() => handleAddImage(song)}>
