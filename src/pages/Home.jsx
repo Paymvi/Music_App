@@ -82,19 +82,6 @@ export default function Home() {
     localStorage.setItem("playlists", JSON.stringify(playlists));
   }, [playlists]);
 
-  // const searchResults = useMemo(() => {
-  //   if (!query.trim()) return [];
-
-  //   const normalizedQuery = query.toLowerCase();
-
-  //   return MOCK_SONGS.filter((song) => {
-  //     return (
-  //       song.title.toLowerCase().includes(normalizedQuery) ||
-  //       song.artist.toLowerCase().includes(normalizedQuery)
-  //     );
-  //   });
-  // }, [query]);
-
   useEffect(() => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -109,16 +96,55 @@ export default function Home() {
         setIsSearchingSongs(true);
         setSearchError("");
 
-        const results = await searchSongs(query, {
+        const normalizedQuery = query.toLowerCase();
+
+        const hardcodedResults = MOCK_SONGS.filter((song) => {
+          return (
+            song.title.toLowerCase().includes(normalizedQuery) ||
+            song.artist.toLowerCase().includes(normalizedQuery)
+          );
+        }).map((song) => ({
+          ...song,
+          source: "hardcoded",
+          imageUrl: song.imageUrl || "",
+          fontSizePx: song.fontSizePx || 14,
+        }));
+
+        const apiResults = await searchSongs(query, {
           signal: controller.signal,
         });
 
-        setSearchResults(results);
+        const hardcodedIds = new Set(hardcodedResults.map((song) => song.id));
+
+        const uniqueApiResults = apiResults.filter(
+          (song) => !hardcodedIds.has(song.id)
+        );
+
+        setSearchResults([...hardcodedResults, ...uniqueApiResults]);
       } catch (error) {
         if (error.name === "AbortError") return;
 
         console.error(error);
-        setSearchError("Could not search songs right now.");
+
+        const normalizedQuery = query.toLowerCase();
+
+        const fallbackHardcodedResults = MOCK_SONGS.filter((song) => {
+          return (
+            song.title.toLowerCase().includes(normalizedQuery) ||
+            song.artist.toLowerCase().includes(normalizedQuery)
+          );
+        }).map((song) => ({
+          ...song,
+          source: "hardcoded",
+          imageUrl: song.imageUrl || "",
+          fontSizePx: song.fontSizePx || 14,
+        }));
+
+        setSearchResults(fallbackHardcodedResults);
+
+        if (fallbackHardcodedResults.length === 0) {
+          setSearchError("Could not search songs right now.");
+        }
       } finally {
         setIsSearchingSongs(false);
       }
@@ -569,10 +595,10 @@ export default function Home() {
               searchResults.map((song) => (
                 <article className="search-result-card" key={song.id}>
                   <div className="song-icon">
-                    {song.imageUrl ? (
+                    {getSongImageUrl(song) ? (
                       <img
                         className="song-cover-image"
-                        src={song.imageUrl}
+                        src={getSongImageUrl(song)}
                         alt={`${song.title} cover`}
                       />
                     ) : (
@@ -581,7 +607,14 @@ export default function Home() {
                   </div>
 
                   <div className="song-text">
-                    <h3>{song.title}</h3>
+                    <div className="song-title-row">
+                      <h3>{song.title}</h3>
+
+                      {song.source === "hardcoded" && (
+                        <span className="hardcoded-tag">♛ Fretz Pick</span>
+                      )}
+                    </div>
+
                     <p>{song.artist}</p>
                   </div>
 
@@ -646,12 +679,20 @@ export default function Home() {
                   </div>
 
                   <div className="song-text">
-                    <h3>
-                      {song.pinned && <span className="pin-indicator">★ </span>}
-                      {song.title}
-                    </h3>
+                    <div className="song-title-row">
+                      <h3>
+                        {song.pinned && <span className="pin-indicator">★ </span>}
+                        {song.title}
+                      </h3>
+
+                      {song.source === "hardcoded" && (
+                        <span className="hardcoded-tag">♛ Hardcoded</span>
+                      )}
+                    </div>
+
                     <p>{song.artist}</p>
                   </div>
+
                 </button>
 
                 <div className="song-actions">
