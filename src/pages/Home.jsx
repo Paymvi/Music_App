@@ -21,6 +21,7 @@ import { MOCK_SONGS } from "../data/mockSongs";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [showSavedCount, setShowSavedCount] = useState(true);
 
   const [newSongForm, setNewSongForm] = useState({
     title: "",
@@ -225,6 +226,18 @@ export default function Home() {
 
 
 
+  function handleDeleteAllSongs() {
+    const shouldDelete = window.confirm(
+      "Delete all saved songs, playlists, and the currently opened tab? This cannot be undone."
+    );
+
+    if (!shouldDelete) return;
+
+    setSavedSongs([]);
+    setPlaylists([]);
+    setSelectedSong(null);
+    setOpenMenuId(null);
+  }
 
 
 
@@ -618,44 +631,6 @@ export default function Home() {
     return song.imageUrl || albumArtBySongId[song.id] || "";
   }
 
-  // async function addSong(song) {
-  //   const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
-
-  //   if (alreadySaved) return;
-
-  //   let imageUrl = getSongImageUrl(song);
-
-  //   if (!imageUrl) {
-  //     try {
-  //       setLoadingArtIds((currentIds) => [...new Set([...currentIds, song.id])]);
-
-  //       imageUrl = await fetchAlbumArt(song.title, song.artist);
-
-  //       if (imageUrl) {
-  //         setAlbumArtBySongId((currentArt) => ({
-  //           ...currentArt,
-  //           [song.id]: imageUrl,
-  //         }));
-  //       }
-  //     } catch (error) {
-  //       console.error("Could not fetch album art:", error);
-  //     } finally {
-  //       setLoadingArtIds((currentIds) =>
-  //         currentIds.filter((id) => id !== song.id)
-  //       );
-  //     }
-  //   }
-
-  //   const songToSave = {
-  //     ...song,
-  //     imageUrl,
-  //     addedAt: new Date().toISOString(),
-  //     playlists: [],
-  //     pinned: false,
-  //   };
-
-  //   setSavedSongs((currentSongs) => [...currentSongs, songToSave]);
-  // }
 
   function addSong(song) {
     const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
@@ -787,11 +762,19 @@ export default function Home() {
       <section className="library-section">
         <div className="section-title-row">
           <div>
-            <h2>Saved Songs</h2>
-            <p>
-              {savedSongs.length} saved tab
-              {savedSongs.length === 1 ? "" : "s"}
-            </p>
+            <button
+              className="saved-songs-toggle"
+              onClick={() => setShowSavedCount((currentValue) => !currentValue)}
+            >
+              Saved Songs
+            </button>
+
+            {showSavedCount && (
+              <p>
+                {savedSongs.length} saved tab
+                {savedSongs.length === 1 ? "" : "s"}
+              </p>
+            )}
           </div>
 
           <div className="library-actions">
@@ -808,6 +791,14 @@ export default function Home() {
               disabled={savedSongs.length === 0}
             >
               Export
+            </button>
+
+            <button
+              className="library-action-button danger"
+              onClick={handleDeleteAllSongs}
+              disabled={savedSongs.length === 0 && playlists.length === 0}
+            >
+              Delete all
             </button>
 
             <button
@@ -861,7 +852,7 @@ export default function Home() {
                       </h3>
 
                       {song.source === "hardcoded" && (
-                        <span className="hardcoded-tag">♛ Hardcoded</span>
+                        <span className="hardcoded-tag">♛ Fretz Pick</span>
                       )}
                     </div>
 

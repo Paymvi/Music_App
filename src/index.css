@@ -1383,6 +1383,17 @@ body {
   display: none;
 }
 
+
+.library-action-button.danger {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.library-action-button.danger:hover:not(:disabled) {
+  color: #fee2e2;
+  background: rgba(248, 113, 113, 0.18);
+}
+
 @media (max-width: 560px) {
   .section-title-row {
     align-items: flex-start;
@@ -1398,4 +1409,25 @@ body {
     padding: 7px 9px;
     font-size: 0.68rem;
   }
+}
+
+
+/* Saved Songs toggle */
+.saved-songs-toggle {
+  border: 0;
+  padding: 0;
+
+  color: #f8fafc;
+  background: transparent;
+
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+
+  cursor: pointer;
+}
+
+.saved-songs-toggle:hover {
+  color: var(--accent);
 }
