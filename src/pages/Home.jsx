@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchAlbumArt } from "../api/albumArt";
+import { searchSongs } from "../api/songSearch";
 
 import {
   FiSearch,
@@ -20,6 +21,21 @@ import { MOCK_SONGS } from "../data/mockSongs";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+
+  const [newSongForm, setNewSongForm] = useState({
+    title: "",
+    artist: "",
+    tuning: "Standard",
+    difficulty: "Beginner",
+    capo: "No capo",
+    tab: "",
+    fontSizePx: 14,
+  });
+
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearchingSongs, setIsSearchingSongs] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [isAddSongOpen, setIsAddSongOpen] = useState(false);
 
   const [albumArtBySongId, setAlbumArtBySongId] = useState({});
   const [loadingArtIds, setLoadingArtIds] = useState([]);
@@ -66,17 +82,54 @@ export default function Home() {
     localStorage.setItem("playlists", JSON.stringify(playlists));
   }, [playlists]);
 
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return [];
+  // const searchResults = useMemo(() => {
+  //   if (!query.trim()) return [];
 
-    const normalizedQuery = query.toLowerCase();
+  //   const normalizedQuery = query.toLowerCase();
 
-    return MOCK_SONGS.filter((song) => {
-      return (
-        song.title.toLowerCase().includes(normalizedQuery) ||
-        song.artist.toLowerCase().includes(normalizedQuery)
-      );
-    });
+  //   return MOCK_SONGS.filter((song) => {
+  //     return (
+  //       song.title.toLowerCase().includes(normalizedQuery) ||
+  //       song.artist.toLowerCase().includes(normalizedQuery)
+  //     );
+  //   });
+  // }, [query]);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setSearchError("");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function runSongSearch() {
+      try {
+        setIsSearchingSongs(true);
+        setSearchError("");
+
+        const results = await searchSongs(query, {
+          signal: controller.signal,
+        });
+
+        setSearchResults(results);
+      } catch (error) {
+        if (error.name === "AbortError") return;
+
+        console.error(error);
+        setSearchError("Could not search songs right now.");
+      } finally {
+        setIsSearchingSongs(false);
+      }
+    }
+
+    const timeoutId = setTimeout(runSongSearch, 350);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [query]);
 
   useEffect(() => {
@@ -137,6 +190,69 @@ export default function Home() {
       isCancelled = true;
     };
   }, [searchResults, albumArtBySongId]);
+
+
+  async function handleCreateSong(event) {
+    event.preventDefault();
+
+    const cleanedTitle = newSongForm.title.trim();
+    const cleanedArtist = newSongForm.artist.trim();
+
+    if (!cleanedTitle || !cleanedArtist) {
+      alert("Song title and artist are required.");
+      return;
+    }
+
+    let imageUrl = "";
+
+    try {
+      imageUrl = await fetchAlbumArt(cleanedTitle, cleanedArtist);
+    } catch (error) {
+      console.error("Could not fetch album art:", error);
+    }
+
+    const newSong = {
+      id: `custom-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      title: cleanedTitle,
+      artist: cleanedArtist,
+      tuning: newSongForm.tuning.trim() || "Standard",
+      difficulty: newSongForm.difficulty.trim() || "Beginner",
+      capo: newSongForm.capo.trim() || "No capo",
+      tab:
+        newSongForm.tab.trim() ||
+        `[${cleanedTitle}]
+
+  Add your chords or tab here.`,
+      imageUrl: imageUrl || "",
+      addedAt: new Date().toISOString(),
+      playlists: [],
+      pinned: false,
+      fontSizePx: Number(newSongForm.fontSizePx) || 14,
+      source: "manual",
+    };
+
+    setSavedSongs((currentSongs) => [...currentSongs, newSong]);
+    setSelectedSong(newSong);
+
+    setNewSongForm({
+      title: "",
+      artist: "",
+      tuning: "Standard",
+      difficulty: "Beginner",
+      capo: "No capo",
+      tab: "",
+      fontSizePx: 14,
+    });
+
+    setIsAddSongOpen(false);
+
+    setTimeout(() => {
+      document.querySelector(".song-tab-panel")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }
 
   function toggleSongMenu(songId) {
     setOpenMenuId((currentId) => (currentId === songId ? null : songId));
@@ -326,40 +442,62 @@ export default function Home() {
     return song.imageUrl || albumArtBySongId[song.id] || "";
   }
 
-  async function addSong(song) {
+  // async function addSong(song) {
+  //   const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
+
+  //   if (alreadySaved) return;
+
+  //   let imageUrl = getSongImageUrl(song);
+
+  //   if (!imageUrl) {
+  //     try {
+  //       setLoadingArtIds((currentIds) => [...new Set([...currentIds, song.id])]);
+
+  //       imageUrl = await fetchAlbumArt(song.title, song.artist);
+
+  //       if (imageUrl) {
+  //         setAlbumArtBySongId((currentArt) => ({
+  //           ...currentArt,
+  //           [song.id]: imageUrl,
+  //         }));
+  //       }
+  //     } catch (error) {
+  //       console.error("Could not fetch album art:", error);
+  //     } finally {
+  //       setLoadingArtIds((currentIds) =>
+  //         currentIds.filter((id) => id !== song.id)
+  //       );
+  //     }
+  //   }
+
+  //   const songToSave = {
+  //     ...song,
+  //     imageUrl,
+  //     addedAt: new Date().toISOString(),
+  //     playlists: [],
+  //     pinned: false,
+  //   };
+
+  //   setSavedSongs((currentSongs) => [...currentSongs, songToSave]);
+  // }
+
+  function addSong(song) {
     const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
 
     if (alreadySaved) return;
 
-    let imageUrl = getSongImageUrl(song);
-
-    if (!imageUrl) {
-      try {
-        setLoadingArtIds((currentIds) => [...new Set([...currentIds, song.id])]);
-
-        imageUrl = await fetchAlbumArt(song.title, song.artist);
-
-        if (imageUrl) {
-          setAlbumArtBySongId((currentArt) => ({
-            ...currentArt,
-            [song.id]: imageUrl,
-          }));
-        }
-      } catch (error) {
-        console.error("Could not fetch album art:", error);
-      } finally {
-        setLoadingArtIds((currentIds) =>
-          currentIds.filter((id) => id !== song.id)
-        );
-      }
-    }
-
     const songToSave = {
       ...song,
-      imageUrl,
+      imageUrl: song.imageUrl || "",
+      tab:
+        song.tab ||
+        `[${song.title}]
+
+  Add your chords or tab here.`,
       addedAt: new Date().toISOString(),
-      playlists: [],
+      playlists: song.playlists || [],
       pinned: false,
+      fontSizePx: song.fontSizePx || 14,
     };
 
     setSavedSongs((currentSongs) => [...currentSongs, songToSave]);
@@ -423,20 +561,24 @@ export default function Home() {
 
         {query && (
           <div className="search-results">
-            {searchResults.length > 0 ? (
+            {isSearchingSongs ? (
+              <p className="empty-message">Searching...</p>
+            ) : searchError ? (
+              <p className="empty-message">{searchError}</p>
+            ) : searchResults.length > 0 ? (
               searchResults.map((song) => (
                 <article className="search-result-card" key={song.id}>
-                <div className="song-icon">
-                  {getSongImageUrl(song) ? (
-                    <img
-                      className="song-cover-image"
-                      src={getSongImageUrl(song)}
-                      alt={`${song.title} cover`}
-                    />
-                  ) : (
-                    <FiMusic />
-                  )}
-                </div>
+                  <div className="song-icon">
+                    {song.imageUrl ? (
+                      <img
+                        className="song-cover-image"
+                        src={song.imageUrl}
+                        alt={`${song.title} cover`}
+                      />
+                    ) : (
+                      <FiMusic />
+                    )}
+                  </div>
 
                   <div className="song-text">
                     <h3>{song.title}</h3>
@@ -446,13 +588,9 @@ export default function Home() {
                   <button
                     className="add-song-button"
                     onClick={() => addSong(song)}
-                    disabled={isSongSaved(song.id) || loadingArtIds.includes(song.id)}
+                    disabled={isSongSaved(song.id)}
                   >
-                    {isSongSaved(song.id)
-                      ? "Added"
-                      : loadingArtIds.includes(song.id)
-                        ? "..."
-                        : <FiPlus />}
+                    {isSongSaved(song.id) ? "Added" : <FiPlus />}
                   </button>
                 </article>
               ))
@@ -472,6 +610,14 @@ export default function Home() {
               {savedSongs.length === 1 ? "" : "s"}
             </p>
           </div>
+
+          <button
+            className="add-custom-song-button"
+            onClick={() => setIsAddSongOpen(true)}
+          >
+            <FiPlus />
+            <span>Add song</span>
+          </button>
         </div>
 
         {savedSongs.length > 0 ? (
@@ -763,6 +909,141 @@ export default function Home() {
           </form>
         </div>
       )}
+
+
+      {isAddSongOpen && (
+        <div className="modal-backdrop">
+          <form className="edit-tab-modal" onSubmit={handleCreateSong}>
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">New Song</p>
+                <h2>Add a custom tab</h2>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={() => setIsAddSongOpen(false)}
+              >
+                <FiX />
+              </button>
+            </div>
+
+            <label>
+              Song title
+              <input
+                value={newSongForm.title}
+                onChange={(event) =>
+                  setNewSongForm((currentForm) => ({
+                    ...currentForm,
+                    title: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Artist
+              <input
+                value={newSongForm.artist}
+                onChange={(event) =>
+                  setNewSongForm((currentForm) => ({
+                    ...currentForm,
+                    artist: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <div className="form-grid">
+              <label>
+                Tuning
+                <input
+                  value={newSongForm.tuning}
+                  onChange={(event) =>
+                    setNewSongForm((currentForm) => ({
+                      ...currentForm,
+                      tuning: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Capo
+                <input
+                  value={newSongForm.capo}
+                  onChange={(event) =>
+                    setNewSongForm((currentForm) => ({
+                      ...currentForm,
+                      capo: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Difficulty
+                <input
+                  value={newSongForm.difficulty}
+                  onChange={(event) =>
+                    setNewSongForm((currentForm) => ({
+                      ...currentForm,
+                      difficulty: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <label>
+              Tab font size px
+              <input
+                type="number"
+                min="8"
+                max="40"
+                value={newSongForm.fontSizePx}
+                onChange={(event) =>
+                  setNewSongForm((currentForm) => ({
+                    ...currentForm,
+                    fontSizePx: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Tab
+              <textarea
+                placeholder={`[Intro]\nG  D  Em  C\n\n[Verse]\nG\nYour chords/tab here...`}
+                value={newSongForm.tab}
+                onChange={(event) =>
+                  setNewSongForm((currentForm) => ({
+                    ...currentForm,
+                    tab: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setIsAddSongOpen(false)}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="primary-button">
+                Add song
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+
     </main>
   );
 }
