@@ -887,7 +887,7 @@ body {
   }
 
   .search-box input {
-    font-size: 1rem;
+    font-size: 0.75rem;
   }
 
   .section-title-row {
@@ -930,5 +930,194 @@ body {
 
   .remove-song-button {
     right: -4px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ═══════════════════════════════════════════════
+   ⋮ SONG LIST THREE-DOT MENU
+   Replaces right-side Chords/X buttons
+   ═══════════════════════════════════════════════ */
+
+/* Remove old generated "Chords" tag */
+.saved-song-main::after {
+  content: none;
+}
+
+/* Main song button no longer needs a right-side fake tag */
+.saved-song-main {
+  grid-template-columns: 58px minmax(0, 1fr);
+  padding-right: 12px;
+}
+
+/* Container for three-dot menu */
+.song-actions {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Three dots button */
+.song-menu-button {
+  display: grid;
+  place-items: center;
+
+  width: 42px;
+  height: 42px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: rgba(248, 250, 252, 0.72);
+  background: transparent;
+
+  font: inherit;
+  font-size: 1.35rem;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.song-menu-button:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.song-menu-button:active {
+  transform: scale(0.94);
+}
+
+/* Dropdown menu */
+.song-menu {
+  position: absolute;
+  right: 8px;
+  top: 48px;
+  z-index: 30;
+
+  min-width: 170px;
+  padding: 8px;
+
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  border-radius: 16px;
+
+  background: rgba(15, 16, 22, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+/* Little triangle pointer */
+.song-menu::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 16px;
+
+  width: 10px;
+  height: 10px;
+
+  background: rgba(15, 16, 22, 0.96);
+  border-left: 1px solid rgba(168, 85, 247, 0.28);
+  border-top: 1px solid rgba(168, 85, 247, 0.28);
+
+  transform: rotate(45deg);
+}
+
+.song-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 11px 12px;
+
+  border: 0;
+  border-radius: 11px;
+
+  color: rgba(248, 250, 252, 0.88);
+  background: transparent;
+
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.song-menu button:hover {
+  color: var(--text);
+  background: rgba(168, 85, 247, 0.16);
+}
+
+.song-menu button svg {
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+.song-menu button.danger {
+  color: #fca5a5;
+}
+
+.song-menu button.danger svg {
+  color: #f87171;
+}
+
+.song-menu button.danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+/* Hide old remove button if old CSS still exists */
+.remove-song-button {
+  display: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 560px) {
+  .saved-song-main {
+    grid-template-columns: 52px minmax(0, 1fr);
+    padding-right: 8px;
+  }
+
+  .song-actions {
+    padding-right: 2px;
+  }
+
+  .song-menu-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .song-menu {
+    right: 2px;
+    min-width: 160px;
   }
 }

@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiSearch, FiPlus, FiMusic, FiChevronRight, FiX } from "react-icons/fi";
+
+import {
+  FiSearch,
+  FiPlus,
+  FiMusic,
+  FiX,
+  FiMoreVertical,
+  FiImage,
+  FiTrash2,
+  FiEye,
+} from "react-icons/fi";
+
 import SongTab from "../components/SongTab";
 import { MOCK_SONGS } from "../data/mockSongs";
 
@@ -8,6 +19,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [savedSongs, setSavedSongs] = useState([]);
   const [selectedSong, setSelectedSong] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("savedSongs")) || [];
@@ -30,6 +42,22 @@ export default function Home() {
       );
     });
   }, [query]);
+
+  function toggleSongMenu(songId) {
+    setOpenMenuId((currentId) => (currentId === songId ? null : songId));
+  }
+
+  function handleOpenSong(song) {
+    setSelectedSong(song);
+    setOpenMenuId(null);
+  }
+
+  function handleAddImage(song) {
+    // Placeholder for now.
+    // Later, this can open an image upload modal.
+    console.log("Add image for:", song.title);
+    setOpenMenuId(null);
+  }
 
   function addSong(song) {
     const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
@@ -68,7 +96,7 @@ export default function Home() {
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search songs or artists..."
+            placeholder="What do you want to play?"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -129,7 +157,7 @@ export default function Home() {
               >
                 <button
                   className="saved-song-main"
-                  onClick={() => setSelectedSong(song)}
+                  onClick={() => handleOpenSong(song)}
                 >
                   <div className="song-icon">
                     <FiMusic />
@@ -139,17 +167,42 @@ export default function Home() {
                     <h3>{song.title}</h3>
                     <p>{song.artist}</p>
                   </div>
-
-                  <FiChevronRight className="song-arrow" />
                 </button>
 
-                <button
-                  className="remove-song-button"
-                  onClick={() => removeSong(song.id)}
-                  aria-label={`Remove ${song.title}`}
-                >
-                  <FiX />
-                </button>
+                <div className="song-actions">
+                  <button
+                    className="song-menu-button"
+                    onClick={() => toggleSongMenu(song.id)}
+                    aria-label={`Open menu for ${song.title}`}
+                  >
+                    <FiMoreVertical />
+                  </button>
+
+                  {openMenuId === song.id && (
+                    <div className="song-menu">
+                      <button onClick={() => handleOpenSong(song)}>
+                        <FiEye />
+                        <span>Open tab</span>
+                      </button>
+
+                      <button onClick={() => handleAddImage(song)}>
+                        <FiImage />
+                        <span>Add image</span>
+                      </button>
+
+                      <button
+                        className="danger"
+                        onClick={() => {
+                          removeSong(song.id);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <FiTrash2 />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </article>
             ))}
           </div>
