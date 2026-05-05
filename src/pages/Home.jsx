@@ -298,8 +298,13 @@ export default function Home() {
   return (
     <main className="home-page">
       <section className="home-header">
-        <p className="eyebrow">My Tabs</p>
-        <h1>Fretz</h1>
+        {/* <p className="eyebrow">My Tabs</p> */}
+
+        <img
+          className="fretz-logo"
+          src="/FretzLogo-3.png"
+          alt="Fretz"
+        />
       </section>
 
       <section className="search-panel">
