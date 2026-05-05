@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchAlbumArt } from "../api/albumArt";
 import { searchSongs } from "../api/songSearch";
 
@@ -31,6 +31,8 @@ export default function Home() {
     tab: "",
     fontSizePx: 14,
   });
+
+  const importFileInputRef = useRef(null);
 
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchingSongs, setIsSearchingSongs] = useState(false);
@@ -216,6 +218,154 @@ export default function Home() {
       isCancelled = true;
     };
   }, [searchResults, albumArtBySongId]);
+
+
+
+
+
+
+
+
+
+
+  function getBackupFileName() {
+    const date = new Date().toISOString().slice(0, 10);
+    return `fretz-backup-${date}.json`;
+  }
+
+  function handleExportSongs() {
+    const backupData = {
+      appName: "Fretz",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      savedSongs,
+      playlists,
+    };
+
+    const json = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = getBackupFileName();
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportButtonClick() {
+    importFileInputRef.current?.click();
+  }
+
+  function normalizeImportedSong(song) {
+    return {
+      id:
+        song.id ||
+        `imported-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      title: song.title || "Untitled Song",
+      artist: song.artist || "Unknown Artist",
+      tuning: song.tuning || "Standard",
+      difficulty: song.difficulty || "Beginner",
+      capo: song.capo || "No capo",
+      tab: song.tab || `[${song.title || "Untitled Song"}]\n\nAdd your chords or tab here.`,
+      imageUrl: song.imageUrl || "",
+      addedAt: song.addedAt || new Date().toISOString(),
+      playlists: Array.isArray(song.playlists) ? song.playlists : [],
+      pinned: Boolean(song.pinned),
+      pinnedAt: song.pinnedAt || "",
+      fontSizePx: Number(song.fontSizePx) || 14,
+      source: song.source || "imported",
+    };
+  }
+
+  function mergeSongs(existingSongs, importedSongs) {
+    const songMap = new Map();
+
+    existingSongs.forEach((song) => {
+      songMap.set(song.id, song);
+    });
+
+    importedSongs.forEach((song) => {
+      songMap.set(song.id, song);
+    });
+
+    return Array.from(songMap.values());
+  }
+
+  async function handleImportSongs(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      const importedSongs = Array.isArray(data.savedSongs)
+        ? data.savedSongs.map(normalizeImportedSong)
+        : Array.isArray(data)
+          ? data.map(normalizeImportedSong)
+          : [];
+
+      const importedPlaylists = Array.isArray(data.playlists)
+        ? data.playlists
+        : [];
+
+      if (importedSongs.length === 0 && importedPlaylists.length === 0) {
+        alert("This file does not contain any Fretz songs or playlists.");
+        return;
+      }
+
+      const shouldImport = window.confirm(
+        `Import ${importedSongs.length} song${importedSongs.length === 1 ? "" : "s"} and ${importedPlaylists.length} playlist${importedPlaylists.length === 1 ? "" : "s"}?\n\nSongs with the same ID will be updated.`
+      );
+
+      if (!shouldImport) return;
+
+      setSavedSongs((currentSongs) =>
+        mergeSongs(currentSongs, importedSongs)
+      );
+
+      setPlaylists((currentPlaylists) => {
+        const playlistMap = new Map();
+
+        currentPlaylists.forEach((playlist) => {
+          playlistMap.set(playlist.id || playlist.name, playlist);
+        });
+
+        importedPlaylists.forEach((playlist) => {
+          const playlistId =
+            playlist.id ||
+            `playlist-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+          playlistMap.set(playlistId, {
+            id: playlistId,
+            name: playlist.name || "Imported Playlist",
+            songs: Array.isArray(playlist.songs)
+              ? playlist.songs.map(normalizeImportedSong)
+              : [],
+            createdAt: playlist.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        });
+
+        return Array.from(playlistMap.values());
+      });
+
+      alert("Import complete!");
+    } catch (error) {
+      console.error("Import failed:", error);
+      alert("Could not import this file. Make sure it is a valid Fretz JSON backup.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+
+
 
 
   async function handleCreateSong(event) {
@@ -644,13 +794,38 @@ export default function Home() {
             </p>
           </div>
 
-          <button
-            className="add-custom-song-button"
-            onClick={() => setIsAddSongOpen(true)}
-          >
-            <FiPlus />
-            <span>Add song</span>
-          </button>
+          <div className="library-actions">
+            <button
+              className="library-action-button"
+              onClick={handleImportButtonClick}
+            >
+              Import
+            </button>
+
+            <button
+              className="library-action-button"
+              onClick={handleExportSongs}
+              disabled={savedSongs.length === 0}
+            >
+              Export
+            </button>
+
+            <button
+              className="add-custom-song-button"
+              onClick={() => setIsAddSongOpen(true)}
+            >
+              <FiPlus />
+              <span>Add song</span>
+            </button>
+          </div>
+
+          <input
+            ref={importFileInputRef}
+            className="hidden-file-input"
+            type="file"
+            accept="application/json,.json"
+            onChange={handleImportSongs}
+          />
         </div>
 
         {savedSongs.length > 0 ? (

@@ -1276,7 +1276,7 @@ body {
 }
 
 /* Add Song */
-/* .add-custom-song-button {
+.add-custom-song-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1290,7 +1290,7 @@ body {
   background: var(--accent);
 
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 750;
 
   cursor: pointer;
@@ -1309,7 +1309,7 @@ body {
     padding: 7px 9px;
     font-size: 0.72rem;
   }
-} */
+}
 
 
 .song-title-row {
@@ -1340,4 +1340,62 @@ body {
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.01em;
+}
+
+
+
+
+/* Libary section (import + export) */
+.library-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.library-action-button {
+  border: 0;
+  border-radius: 999px;
+
+  padding: 8px 11px;
+
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 750;
+
+  cursor: pointer;
+}
+
+.library-action-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.library-action-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .section-title-row {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .library-actions {
+    gap: 6px;
+  }
+
+  .library-action-button,
+  .add-custom-song-button {
+    padding: 7px 9px;
+    font-size: 0.68rem;
+  }
 }
