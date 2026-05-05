@@ -57,13 +57,6 @@ export default function Home() {
     }
   });
 
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("savedSongs")) || [];
-    const savedPlaylists = JSON.parse(localStorage.getItem("playlists")) || [];
-
-    setSavedSongs(saved);
-    setPlaylists(savedPlaylists);
-  }, []);
 
   useEffect(() => {
     localStorage.setItem("savedSongs", JSON.stringify(savedSongs));
@@ -159,6 +152,18 @@ export default function Home() {
     setSelectedSong((currentSong) =>
       currentSong?.id === songId ? { ...currentSong, ...updates } : currentSong
     );
+  }
+
+  function handleOpenSong(song) {
+    setSelectedSong(song);
+    setOpenMenuId(null);
+
+    setTimeout(() => {
+      document.querySelector(".song-tab-panel")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
   }
 
   async function handleAddImage(song) {
