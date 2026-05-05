@@ -1178,3 +1178,93 @@ body {
 }
 
 
+
+
+
+/* ═══════════════════════════════════════════════
+   ⏬ AUTO-SCROLL CONTROLS
+   ═══════════════════════════════════════════════ */
+
+.autoscroll-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  margin: 14px 0 16px;
+  padding: 10px;
+
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.autoscroll-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  border: 0;
+  border-radius: 999px;
+
+  padding: 9px 12px;
+
+  color: white;
+  background: var(--accent);
+
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.autoscroll-button.secondary {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.autoscroll-button:hover {
+  filter: brightness(1.08);
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  flex: 1;
+  min-width: 180px;
+
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.speed-control input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.speed-control strong {
+  min-width: 28px;
+  color: var(--text);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .autoscroll-controls {
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .autoscroll-button {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .speed-control {
+    min-width: 100%;
+  }
+}
