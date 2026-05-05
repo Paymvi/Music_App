@@ -557,6 +557,7 @@ body {
 
 .section-title-row p {
   color: var(--accent);
+  margin: 4px 0 0;
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -1428,6 +1429,8 @@ body {
   cursor: pointer;
 }
 
-.saved-songs-toggle:hover {
-  color: var(--accent);
+@media (max-width: 560px) {
+  .library-actions {
+    padding-top: 8px;
+  }
 }
