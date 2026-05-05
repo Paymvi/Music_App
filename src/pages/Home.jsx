@@ -20,6 +20,9 @@ import { MOCK_SONGS } from "../data/mockSongs";
 
 export default function Home() {
   const [query, setQuery] = useState("");
+
+  const [albumArtBySongId, setAlbumArtBySongId] = useState({});
+  const [loadingArtIds, setLoadingArtIds] = useState([]);
   
   const [savedSongs, setSavedSongs] = useState(() => {
     try {
@@ -82,6 +85,65 @@ export default function Home() {
       );
     });
   }, [query]);
+
+  useEffect(() => {
+    if (searchResults.length === 0) return;
+
+    let isCancelled = false;
+
+    async function loadAlbumArtForSearchResults() {
+      const songsMissingArt = searchResults.filter(
+        (song) => !albumArtBySongId[song.id]
+      );
+
+      if (songsMissingArt.length === 0) return;
+
+      setLoadingArtIds((currentIds) => [
+        ...new Set([...currentIds, ...songsMissingArt.map((song) => song.id)]),
+      ]);
+
+      const results = await Promise.allSettled(
+        songsMissingArt.map(async (song) => {
+          const imageUrl = await fetchAlbumArt(song.title, song.artist);
+
+          return {
+            songId: song.id,
+            imageUrl,
+          };
+        })
+      );
+
+      if (isCancelled) return;
+
+      setAlbumArtBySongId((currentArt) => {
+        const updatedArt = { ...currentArt };
+
+        results.forEach((result) => {
+          if (result.status !== "fulfilled") return;
+
+          const { songId, imageUrl } = result.value;
+
+          if (imageUrl) {
+            updatedArt[songId] = imageUrl;
+          }
+        });
+
+        return updatedArt;
+      });
+
+      setLoadingArtIds((currentIds) =>
+        currentIds.filter(
+          (id) => !songsMissingArt.some((song) => song.id === id)
+        )
+      );
+    }
+
+    loadAlbumArtForSearchResults();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [searchResults, albumArtBySongId]);
 
   function toggleSongMenu(songId) {
     setOpenMenuId((currentId) => (currentId === songId ? null : songId));
@@ -255,13 +317,41 @@ export default function Home() {
     setOpenMenuId(null);
   }
 
-  function addSong(song) {
+  function getSongImageUrl(song) {
+    return song.imageUrl || albumArtBySongId[song.id] || "";
+  }
+
+  async function addSong(song) {
     const alreadySaved = savedSongs.some((savedSong) => savedSong.id === song.id);
 
     if (alreadySaved) return;
 
+    let imageUrl = getSongImageUrl(song);
+
+    if (!imageUrl) {
+      try {
+        setLoadingArtIds((currentIds) => [...new Set([...currentIds, song.id])]);
+
+        imageUrl = await fetchAlbumArt(song.title, song.artist);
+
+        if (imageUrl) {
+          setAlbumArtBySongId((currentArt) => ({
+            ...currentArt,
+            [song.id]: imageUrl,
+          }));
+        }
+      } catch (error) {
+        console.error("Could not fetch album art:", error);
+      } finally {
+        setLoadingArtIds((currentIds) =>
+          currentIds.filter((id) => id !== song.id)
+        );
+      }
+    }
+
     const songToSave = {
       ...song,
+      imageUrl,
       addedAt: new Date().toISOString(),
       playlists: [],
       pinned: false,
@@ -331,9 +421,17 @@ export default function Home() {
             {searchResults.length > 0 ? (
               searchResults.map((song) => (
                 <article className="search-result-card" key={song.id}>
-                  <div className="song-icon">
+                <div className="song-icon">
+                  {getSongImageUrl(song) ? (
+                    <img
+                      className="song-cover-image"
+                      src={getSongImageUrl(song)}
+                      alt={`${song.title} cover`}
+                    />
+                  ) : (
                     <FiMusic />
-                  </div>
+                  )}
+                </div>
 
                   <div className="song-text">
                     <h3>{song.title}</h3>
@@ -343,9 +441,13 @@ export default function Home() {
                   <button
                     className="add-song-button"
                     onClick={() => addSong(song)}
-                    disabled={isSongSaved(song.id)}
+                    disabled={isSongSaved(song.id) || loadingArtIds.includes(song.id)}
                   >
-                    {isSongSaved(song.id) ? "Added" : <FiPlus />}
+                    {isSongSaved(song.id)
+                      ? "Added"
+                      : loadingArtIds.includes(song.id)
+                        ? "..."
+                        : <FiPlus />}
                   </button>
                 </article>
               ))

@@ -14,7 +14,7 @@ export async function fetchAlbumArt(songTitle, artistName) {
   const result = data.results?.[0];
 
   if (!result?.artworkUrl100) {
-    return null;
+    return "";
   }
 
   // Upgrade image size when possible.
