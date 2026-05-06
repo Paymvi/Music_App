@@ -137,6 +137,7 @@ function renderTabLine(line, lineIndex) {
 export default function SongTab({ song, onClose }) {
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(30);
+  const [isStyledView, setIsStyledView] = useState(true);
 
   const animationFrameRef = useRef(null);
   const lastTimeRef = useRef(null);
@@ -262,6 +263,17 @@ export default function SongTab({ song, onClose }) {
           <span>Reset</span>
         </button>
 
+        <button
+          className={
+            isStyledView
+              ? "autoscroll-button secondary view-toggle-active"
+              : "autoscroll-button secondary"
+          }
+          onClick={() => setIsStyledView((currentValue) => !currentValue)}
+        >
+          <span>{isStyledView ? "Styled view" : "Plain view"}</span>
+        </button>
+
         <label className="speed-control">
           <span>Speed</span>
 
@@ -278,12 +290,21 @@ export default function SongTab({ song, onClose }) {
         </label>
       </div>
 
-      <div
-        className="rendered-tab-content"
-        style={{ fontSize: `${song.fontSizePx || 14}px` }}
-      >
-        {tabLines.map((line, lineIndex) => renderTabLine(line, lineIndex))}
-      </div>
+      {isStyledView ? (
+        <div
+          className="rendered-tab-content"
+          style={{ fontSize: `${song.fontSizePx || 14}px` }}
+        >
+          {tabLines.map((line, lineIndex) => renderTabLine(line, lineIndex))}
+        </div>
+      ) : (
+        <pre
+          className="tab-content"
+          style={{ fontSize: `${song.fontSizePx || 14}px` }}
+        >
+          {song.tab}
+        </pre>
+      )}
     </section>
   );
 }
