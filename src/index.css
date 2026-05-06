@@ -1814,3 +1814,125 @@ body {
     width: 100%;
   }
 }
+
+
+
+
+
+
+/* Library tabs: My Songs / Playlists */
+.library-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+
+  margin-bottom: 14px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.library-tab {
+  position: relative;
+
+  border: 0;
+  padding: 13px 8px;
+
+  color: var(--muted);
+  background: transparent;
+
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.library-tab:hover {
+  color: var(--text);
+}
+
+.library-tab.active {
+  color: var(--text);
+}
+
+.library-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+
+  height: 3px;
+  border-radius: 999px;
+
+  background: #facc15;
+}
+
+/* Playlist chips shown when Playlists tab is active */
+.playlist-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  padding: 12px 0 4px;
+}
+
+.playlist-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+
+  padding: 8px 11px;
+
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.055);
+
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.playlist-filter-chip span {
+  display: grid;
+  place-items: center;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+
+  border-radius: 999px;
+
+  color: #2a1700;
+  background: #facc15;
+
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.playlist-filter-chip.active {
+  color: var(--text);
+  border-color: rgba(250, 204, 21, 0.5);
+  background: rgba(250, 204, 21, 0.11);
+}
+
+@media (max-width: 560px) {
+  .library-tab {
+    padding: 11px 6px;
+    font-size: 0.9rem;
+  }
+
+  .playlist-filter-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .playlist-filter-chip {
+    flex-shrink: 0;
+  }
+}

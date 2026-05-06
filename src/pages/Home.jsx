@@ -26,6 +26,9 @@ export default function Home() {
   const [showSavedCount, setShowSavedCount] = useState(true);
   const [editingSongKey, setEditingSongKey] = useState(null);
 
+  const [libraryTab, setLibraryTab] = useState("songs");
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+
   const [newSongForm, setNewSongForm] = useState({
     title: "",
     artist: "",
@@ -475,6 +478,16 @@ export default function Home() {
       )
     );
 
+    setPlaylists((currentPlaylists) =>
+      currentPlaylists.map((playlist) => ({
+        ...playlist,
+        songs: playlist.songs.map((song) =>
+          getSongKey(song) === songId ? { ...song, ...updates } : song
+        ),
+        updatedAt: new Date().toISOString(),
+      }))
+    );
+
     setSelectedSong((currentSong) =>
       currentSong && getSongKey(currentSong) === songId
         ? { ...currentSong, ...updates }
@@ -711,6 +724,16 @@ export default function Home() {
     return savedSongs.some((song) => getSongKey(song) === songId);
   }
 
+  const selectedPlaylist =
+    playlists.find((playlist) => playlist.id === selectedPlaylistId) ||
+    playlists[0] ||
+    null;
+
+  const visibleSongs =
+    libraryTab === "playlists" && selectedPlaylist
+      ? selectedPlaylist.songs || []
+      : savedSongs;
+
   return (
     <main className="home-page">
       <section className="home-header">
@@ -790,19 +813,38 @@ export default function Home() {
       </section>
 
       <section className="library-section">
+        <div className="library-tabs">
+          <button
+            className={libraryTab === "songs" ? "library-tab active" : "library-tab"}
+            onClick={() => setLibraryTab("songs")}
+          >
+            My Songs
+          </button>
+
+          <button
+            className={
+              libraryTab === "playlists" ? "library-tab active" : "library-tab"
+            }
+            onClick={() => setLibraryTab("playlists")}
+          >
+            Playlists
+          </button>
+        </div>
+
         <div className="section-title-row">
           <div>
             <button
               className="saved-songs-toggle"
               onClick={() => setShowSavedCount((currentValue) => !currentValue)}
             >
-              Saved Songs
+              {libraryTab === "playlists" ? "Playlists" : "My Songs"}
             </button>
 
             {showSavedCount && (
               <p>
-                {savedSongs.length} saved tab
-                {savedSongs.length === 1 ? "" : "s"}
+                {libraryTab === "playlists"
+                  ? `${playlists.length} playlist${playlists.length === 1 ? "" : "s"}`
+                  : `${savedSongs.length} saved tab${savedSongs.length === 1 ? "" : "s"}`}
               </p>
             )}
           </div>
@@ -849,9 +891,34 @@ export default function Home() {
           />
         </div>
 
-        {savedSongs.length > 0 ? (
+        {libraryTab === "playlists" && (
+          <div className="playlist-filter-row">
+            {playlists.length > 0 ? (
+              playlists.map((playlist) => (
+                <button
+                  key={playlist.id}
+                  className={
+                    selectedPlaylist?.id === playlist.id
+                      ? "playlist-filter-chip active"
+                      : "playlist-filter-chip"
+                  }
+                  onClick={() => setSelectedPlaylistId(playlist.id)}
+                >
+                  {playlist.name}
+                  <span>{playlist.songs?.length || 0}</span>
+                </button>
+              ))
+            ) : (
+              <p className="empty-message">
+                No playlists yet. Use a song&apos;s three-dot menu to add one.
+              </p>
+            )}
+          </div>
+        )}
+
+        {visibleSongs.length > 0 ? (
           <div className="saved-song-list">
-            {savedSongs.map((song) => (
+            {visibleSongs.map((song) => (
               <article
                 className={`saved-song-card ${
                   selectedSong && getSongKey(selectedSong) === getSongKey(song) ? "selected" : ""
@@ -943,8 +1010,14 @@ export default function Home() {
         ) : (
           <div className="empty-library">
             <FiMusic />
-            <h3>No tabs saved yet</h3>
-            <p>Search for a song above and add it to your list.</p>
+            <h3>
+              {libraryTab === "playlists" ? "No songs in this playlist" : "No tabs saved yet"}
+            </h3>
+            <p>
+              {libraryTab === "playlists"
+                ? "Add songs to a playlist from the three-dot menu."
+                : "Search for a song above and add it to your list."}
+            </p>
           </div>
         )}
       </section>
