@@ -1948,3 +1948,101 @@ body {
   background: #facc15;
   color: #2a1700;
 } */
+
+
+
+
+
+
+
+/* ═══════════════════════════════════════════════
+   🎼 RENDERED TAB VIEWER
+   ═══════════════════════════════════════════════ */
+
+.rendered-tab-content {
+  overflow-x: auto;
+
+  margin: 0;
+  padding: 18px;
+
+  border-radius: 18px;
+
+  color: #f8fafc;
+  background: rgba(0, 0, 0, 0.32);
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.65;
+}
+
+.rendered-tab-content > div {
+  min-height: 1.45em;
+  white-space: pre-wrap;
+}
+
+.rendered-empty-line {
+  height: 0.85em;
+}
+
+.rendered-section-line {
+  margin: 16px 0 8px;
+
+  color: var(--accent);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.88em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rendered-chord-line {
+  color: #facc15;
+  font-weight: 800;
+}
+
+.rendered-chord {
+  display: inline-block;
+
+  color: #facc15;
+  font-weight: 800;
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.16);
+}
+
+.rendered-note-line,
+.rendered-note-inline {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.rendered-note-line {
+  margin: 4px 0;
+}
+
+.rendered-guitar-tab-line {
+  color: #c4b5fd;
+  font-weight: 700;
+}
+
+.rendered-lyric-line {
+  color: #f8fafc;
+}
+
+.rendered-section-inline {
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.song-tab-copy {
+  min-width: 0;
+}
+
+.song-tab-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.song-tab-title-row h2 {
+  min-width: 0;
+}
