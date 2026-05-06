@@ -2,10 +2,10 @@
 
 .fretz-logo {
 
-  width: min(140px, 85vw);
+  width: min(180px, 85vw);
   height: auto;
   object-fit: contain;
-  padding: 12px 8px 8px;
+  padding: 12px 12px 5px;
 
 }
 

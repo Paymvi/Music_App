@@ -19,6 +19,8 @@ import {
 import SongTab from "../components/SongTab";
 import { MOCK_SONGS } from "../data/mockSongs";
 
+console.log("MOCK_SONGS loaded:", MOCK_SONGS.map((song) => song.title));
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [showSavedCount, setShowSavedCount] = useState(true);
