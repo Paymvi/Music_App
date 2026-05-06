@@ -724,15 +724,28 @@ export default function Home() {
     return savedSongs.some((song) => getSongKey(song) === songId);
   }
 
+  const fretzPickPlaylist = {
+    id: "fretz-picks",
+    name: "♛ Fretz Picks",
+    songs: savedSongs.filter(isFretzPick),
+    isSystemPlaylist: true,
+  };
+
+  const visiblePlaylists = [fretzPickPlaylist, ...playlists];
+
   const selectedPlaylist =
-    playlists.find((playlist) => playlist.id === selectedPlaylistId) ||
-    playlists[0] ||
+    visiblePlaylists.find((playlist) => playlist.id === selectedPlaylistId) ||
+    visiblePlaylists[0] ||
     null;
 
   const visibleSongs =
     libraryTab === "playlists" && selectedPlaylist
       ? selectedPlaylist.songs || []
       : savedSongs;
+
+  function isFretzPick(song) {
+    return song.source === "hardcoded";
+  }
 
   return (
     <main className="home-page">
@@ -843,7 +856,7 @@ export default function Home() {
             {showSavedCount && (
               <p>
                 {libraryTab === "playlists"
-                  ? `${playlists.length} playlist${playlists.length === 1 ? "" : "s"}`
+                  ? `${visiblePlaylists.length} playlist${visiblePlaylists.length === 1 ? "" : "s"}`
                   : `${savedSongs.length} saved tab${savedSongs.length === 1 ? "" : "s"}`}
               </p>
             )}
@@ -893,15 +906,15 @@ export default function Home() {
 
         {libraryTab === "playlists" && (
           <div className="playlist-filter-row">
-            {playlists.length > 0 ? (
-              playlists.map((playlist) => (
+            {visiblePlaylists.length > 0 ? (
+              visiblePlaylists.map((playlist) => (
                 <button
                   key={playlist.id}
-                  className={
-                    selectedPlaylist?.id === playlist.id
-                      ? "playlist-filter-chip active"
-                      : "playlist-filter-chip"
-                  }
+                  className={[
+                    "playlist-filter-chip",
+                    selectedPlaylist?.id === playlist.id ? "active" : "",
+                    playlist.isSystemPlaylist ? "system" : "",
+                  ].join(" ")}
                   onClick={() => setSelectedPlaylistId(playlist.id)}
                 >
                   {playlist.name}

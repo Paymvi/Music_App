@@ -1842,7 +1842,7 @@ body {
 
   font: inherit;
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: 700;
 
   cursor: pointer;
 }
@@ -1892,7 +1892,7 @@ body {
 
   font: inherit;
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
 
   cursor: pointer;
 }
@@ -1911,7 +1911,7 @@ body {
   background: #facc15;
 
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .playlist-filter-chip.active {
@@ -1936,3 +1936,15 @@ body {
     flex-shrink: 0;
   }
 }
+
+
+/* Fretz pick playlist */
+/* .playlist-filter-chip.system {
+  border-color: rgba(250, 204, 21, 0.45);
+  color: #facc15;
+}
+
+.playlist-filter-chip.system span {
+  background: #facc15;
+  color: #2a1700;
+} */
