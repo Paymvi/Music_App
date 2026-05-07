@@ -1823,7 +1823,7 @@ body {
 /* Library tabs: My Songs / Playlists */
 .library-tabs {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
 
   margin-bottom: 14px;
@@ -2065,3 +2065,105 @@ body {
 }
 
 
+
+
+/* Progress */
+.progress-song-list {
+  display: grid;
+  gap: 14px;
+}
+
+.progress-song-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.progress-song-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-percent {
+  margin-left: auto;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.progress-slider-block {
+  display: grid;
+  gap: 8px;
+}
+
+.progress-slider-label-row,
+.progress-slider-markers {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.progress-slider {
+  width: 100%;
+  accent-color: currentColor;
+  cursor: pointer;
+}
+
+.progress-notes-toggle {
+  width: fit-content;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.progress-notes-toggle:hover {
+  opacity: 1;
+}
+
+.progress-notes-area {
+  display: grid;
+  gap: 8px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.progress-notes-area textarea {
+  min-height: 90px;
+  resize: vertical;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+  font: inherit;
+}
+
+.progress-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.progress-remove-button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  cursor: pointer;
+}
+
+.progress-remove-button:hover {
+  opacity: 1;
+}

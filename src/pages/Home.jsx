@@ -14,6 +14,9 @@ import {
   FiEdit3,
   FiList,
   FiStar,
+  FiTrendingUp,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 
 import SongTab from "../components/SongTab";
@@ -81,6 +84,20 @@ export default function Home() {
       return [];
     }
   });
+
+  const [progressBySongId, setProgressBySongId] = useState(() => {
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem("songProgress")) || {};
+
+      return storedProgress && typeof storedProgress === "object" && !Array.isArray(storedProgress)
+        ? storedProgress
+        : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [expandedProgressNotes, setExpandedProgressNotes] = useState({});
 
 
   useEffect(() => {
@@ -226,6 +243,10 @@ export default function Home() {
     };
   }, [searchResults, albumArtBySongId]);
 
+  useEffect(() => {
+    localStorage.setItem("songProgress", JSON.stringify(progressBySongId));
+  }, [progressBySongId]);
+
 
 
 
@@ -234,7 +255,7 @@ export default function Home() {
 
   function handleDeleteAllSongs() {
     const shouldDelete = window.confirm(
-      "Delete all saved songs, playlists, and the currently opened tab? This cannot be undone."
+      "Delete all saved songs, playlists, progress, and the currently opened tab? This cannot be undone."
     );
 
     if (!shouldDelete) return;
@@ -242,6 +263,8 @@ export default function Home() {
     setSavedSongs([]);
     setPlaylists([]);
     setSelectedSong(null);
+    setProgressBySongId({});
+    setExpandedProgressNotes({});
     setOpenMenuId(null);
   }
 
@@ -259,6 +282,7 @@ export default function Home() {
       exportedAt: new Date().toISOString(),
       savedSongs,
       playlists,
+      progressBySongId,
     };
 
     const json = JSON.stringify(backupData, null, 2);
@@ -372,6 +396,17 @@ export default function Home() {
         return Array.from(playlistMap.values());
       });
 
+      if (
+        data.progressBySongId &&
+        typeof data.progressBySongId === "object" &&
+        !Array.isArray(data.progressBySongId)
+      ) {
+        setProgressBySongId((currentProgress) => ({
+          ...currentProgress,
+          ...data.progressBySongId,
+        }));
+      }
+
       alert("Import complete!");
     } catch (error) {
       console.error("Import failed:", error);
@@ -383,6 +418,110 @@ export default function Home() {
 
 
 
+  function getProgressEntry(song) {
+    const songKey = getSongKey(song);
+
+    return (
+      progressBySongId[songKey] || {
+        percent: 0,
+        notes: "",
+        trackedAt: "",
+        updatedAt: "",
+      }
+    );
+  }
+
+  function handleTrackProgress(song) {
+    const songKey = getSongKey(song);
+
+    setProgressBySongId((currentProgress) => ({
+      ...currentProgress,
+      [songKey]: currentProgress[songKey] || {
+        percent: 0,
+        notes: "",
+        trackedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+
+    setLibraryTab("progress");
+    setOpenMenuId(null);
+  }
+
+  function handleProgressChange(song, percent) {
+    const songKey = getSongKey(song);
+
+    setProgressBySongId((currentProgress) => {
+      const existingEntry = currentProgress[songKey] || {
+        percent: 0,
+        notes: "",
+        trackedAt: new Date().toISOString(),
+        updatedAt: "",
+      };
+
+      return {
+        ...currentProgress,
+        [songKey]: {
+          ...existingEntry,
+          percent,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  }
+
+  function handleProgressNotesChange(song, notes) {
+    const songKey = getSongKey(song);
+
+    setProgressBySongId((currentProgress) => {
+      const existingEntry = currentProgress[songKey] || {
+        percent: 0,
+        notes: "",
+        trackedAt: new Date().toISOString(),
+        updatedAt: "",
+      };
+
+      return {
+        ...currentProgress,
+        [songKey]: {
+          ...existingEntry,
+          notes,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  }
+
+  function toggleProgressNotes(song) {
+    const songKey = getSongKey(song);
+
+    setExpandedProgressNotes((currentNotes) => ({
+      ...currentNotes,
+      [songKey]: !currentNotes[songKey],
+    }));
+  }
+
+  function removeSongProgress(song) {
+    const songKey = getSongKey(song);
+
+    const shouldStopTracking = window.confirm(
+      `Stop tracking progress for "${song.title}"? Your progress notes for this song will be removed.`
+    );
+
+    if (!shouldStopTracking) return;
+
+    setProgressBySongId((currentProgress) => {
+      const updatedProgress = { ...currentProgress };
+      delete updatedProgress[songKey];
+      return updatedProgress;
+    });
+
+    setExpandedProgressNotes((currentNotes) => {
+      const updatedNotes = { ...currentNotes };
+      delete updatedNotes[songKey];
+      return updatedNotes;
+    });
+  }
 
   function getSongKey(song) {
     return (
@@ -717,6 +856,18 @@ export default function Home() {
       setSelectedSong(null);
     }
 
+    setProgressBySongId((currentProgress) => {
+      const updatedProgress = { ...currentProgress };
+      delete updatedProgress[songId];
+      return updatedProgress;
+    });
+
+    setExpandedProgressNotes((currentNotes) => {
+      const updatedNotes = { ...currentNotes };
+      delete updatedNotes[songId];
+      return updatedNotes;
+    });
+
     setOpenMenuId(null);
   }
 
@@ -738,10 +889,25 @@ export default function Home() {
     visiblePlaylists[0] ||
     null;
 
+  const progressSongs = useMemo(() => {
+    return savedSongs.filter((song) => progressBySongId[getSongKey(song)]);
+  }, [savedSongs, progressBySongId]);
+
+  const averageProgress =
+    progressSongs.length > 0
+      ? Math.round(
+          progressSongs.reduce((total, song) => {
+            return total + Number(getProgressEntry(song).percent || 0);
+          }, 0) / progressSongs.length
+        )
+      : 0;
+
   const visibleSongs =
-    libraryTab === "playlists" && selectedPlaylist
-      ? selectedPlaylist.songs || []
-      : savedSongs;
+    libraryTab === "progress"
+      ? progressSongs
+      : libraryTab === "playlists" && selectedPlaylist
+        ? selectedPlaylist.songs || []
+        : savedSongs;
 
   function isFretzPick(song) {
     return song.source === "hardcoded";
@@ -842,6 +1008,15 @@ export default function Home() {
           >
             Playlists
           </button>
+
+          <button
+            className={
+              libraryTab === "progress" ? "library-tab active" : "library-tab"
+            }
+            onClick={() => setLibraryTab("progress")}
+          >
+            Progress
+          </button>
         </div>
 
         <div className="section-title-row">
@@ -850,14 +1025,22 @@ export default function Home() {
               className="saved-songs-toggle"
               onClick={() => setShowSavedCount((currentValue) => !currentValue)}
             >
-              {libraryTab === "playlists" ? "Playlists" : "My Songs"}
+              {libraryTab === "playlists"
+                ? "Playlists"
+                : libraryTab === "progress"
+                  ? "Progress"
+                  : "My Songs"}
             </button>
 
             {showSavedCount && (
               <p>
                 {libraryTab === "playlists"
                   ? `${visiblePlaylists.length} playlist${visiblePlaylists.length === 1 ? "" : "s"}`
-                  : `${savedSongs.length} saved tab${savedSongs.length === 1 ? "" : "s"}`}
+                  : libraryTab === "progress"
+                    ? `${progressSongs.length} tracked song${progressSongs.length === 1 ? "" : "s"}${
+                        progressSongs.length > 0 ? ` • ${averageProgress}% average` : ""
+                      }`
+                    : `${savedSongs.length} saved tab${savedSongs.length === 1 ? "" : "s"}`}
               </p>
             )}
           </div>
@@ -930,106 +1113,235 @@ export default function Home() {
         )}
 
         {visibleSongs.length > 0 ? (
-          <div className="saved-song-list">
-            {visibleSongs.map((song) => (
-              <article
-                className={`saved-song-card ${
-                  selectedSong && getSongKey(selectedSong) === getSongKey(song) ? "selected" : ""
-                }`}
-                key={getSongKey(song)}
-              >
-                <button
-                  className="saved-song-main"
-                  onClick={() => handleOpenSong(song)}
-                >
-                  <div className="song-icon">
-                    {song.imageUrl ? (
-                      <img
-                        className="song-cover-image"
-                        src={song.imageUrl}
-                        alt={`${song.title} cover`}
-                      />
-                    ) : (
-                      <FiMusic />
-                    )}
-                  </div>
+          libraryTab === "progress" ? (
+            <div className="progress-song-list">
+              {progressSongs.map((song) => {
+                const songKey = getSongKey(song);
+                const progressEntry = getProgressEntry(song);
+                const isNotesOpen = expandedProgressNotes[songKey];
 
-                  <div className="song-text">
-                    <div className="song-title-row">
-                      <h3>
-                        {song.pinned && <span className="pin-indicator">★ </span>}
-                        {song.title}
-                      </h3>
+                return (
+                  <article className="progress-song-card" key={songKey}>
+                    <div className="progress-song-header">
+                      <div className="song-icon">
+                        {song.imageUrl ? (
+                          <img
+                            className="song-cover-image"
+                            src={song.imageUrl}
+                            alt={`${song.title} cover`}
+                          />
+                        ) : (
+                          <FiMusic />
+                        )}
+                      </div>
 
-                      {song.source === "hardcoded" && (
-                        <span className="hardcoded-tag">♛ Fretz Pick</span>
-                      )}
+                      <div className="song-text">
+                        <div className="song-title-row">
+                          <h3>{song.title}</h3>
+
+                          {song.source === "hardcoded" && (
+                            <span className="hardcoded-tag">♛ Fretz Pick</span>
+                          )}
+                        </div>
+
+                        <p>{song.artist}</p>
+                      </div>
+
+                      <strong className="progress-percent">
+                        {progressEntry.percent || 0}%
+                      </strong>
                     </div>
 
-                    <p>{song.artist}</p>
-                  </div>
+                    <div className="progress-slider-block">
+                      <div className="progress-slider-label-row">
+                        <span>Song progress</span>
+                        <span>{progressEntry.percent || 0}% learned</span>
+                      </div>
 
-                </button>
+                      <input
+                        className="progress-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={progressEntry.percent || 0}
+                        onChange={(event) =>
+                          handleProgressChange(song, Number(event.target.value))
+                        }
+                      />
 
-                <div className="song-actions">
-                  <button
-                    className="song-menu-button"
-                    onClick={() => toggleSongMenu(getSongKey(song))}
-                    aria-label={`Open menu for ${song.title}`}
-                  >
-                    <FiMoreVertical />
-                  </button>
+                      <div className="progress-slider-markers">
+                        <span>Learning</span>
+                        <span>Getting it</span>
+                        <span>Performance ready</span>
+                      </div>
+                    </div>
 
-                  {openMenuId === getSongKey(song) && (
-                    <div className="song-menu">
-                      <button onClick={() => handleOpenSong(song)}>
-                        <FiEye />
-                        <span>Open tab</span>
-                      </button>
+                    <button
+                      type="button"
+                      className="progress-notes-toggle"
+                      onClick={() => toggleProgressNotes(song)}
+                    >
+                      {isNotesOpen ? <FiChevronUp /> : <FiChevronDown />}
+                      <span>
+                        {isNotesOpen
+                          ? "Hide notes"
+                          : progressEntry.notes?.trim()
+                            ? "View notes"
+                            : "Add notes"}
+                      </span>
+                    </button>
 
-                      <button onClick={() => handleEditTab(song)}>
-                        <FiEdit3 />
-                        <span>Edit tab</span>
-                      </button>
+                    {isNotesOpen && (
+                      <label className="progress-notes-area">
+                        Practice notes
+                        <textarea
+                          placeholder="Example: Work on the chorus changes, clean up the bridge, practice slowly at 70 BPM..."
+                          value={progressEntry.notes || ""}
+                          onChange={(event) =>
+                            handleProgressNotesChange(song, event.target.value)
+                          }
+                        />
+                      </label>
+                    )}
 
-                      <button onClick={() => handleAddToPlaylist(song)}>
-                        <FiList />
-                        <span>Add to playlist</span>
-                      </button>
-
-                      <button onClick={() => handlePinToTop(song)}>
-                        <FiStar />
-                        <span>Pin to top</span>
-                      </button>
-
-                      <button onClick={() => handleAddImage(song)}>
-                        <FiImage />
-                        <span>Find album art</span>
+                    <div className="progress-card-actions">
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => handleOpenSong(song)}
+                      >
+                        Open tab
                       </button>
 
                       <button
-                        className="danger"
-                        onClick={() => removeSong(getSongKey(song))}
+                        type="button"
+                        className="progress-remove-button"
+                        onClick={() => removeSongProgress(song)}
                       >
-                        <FiTrash2 />
-                        <span>Remove</span>
+                        Stop tracking
                       </button>
                     </div>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="saved-song-list">
+              {visibleSongs.map((song) => (
+                <article
+                  className={`saved-song-card ${
+                    selectedSong && getSongKey(selectedSong) === getSongKey(song) ? "selected" : ""
+                  }`}
+                  key={getSongKey(song)}
+                >
+                  <button
+                    className="saved-song-main"
+                    onClick={() => handleOpenSong(song)}
+                  >
+                    <div className="song-icon">
+                      {song.imageUrl ? (
+                        <img
+                          className="song-cover-image"
+                          src={song.imageUrl}
+                          alt={`${song.title} cover`}
+                        />
+                      ) : (
+                        <FiMusic />
+                      )}
+                    </div>
+
+                    <div className="song-text">
+                      <div className="song-title-row">
+                        <h3>
+                          {song.pinned && <span className="pin-indicator">★ </span>}
+                          {song.title}
+                        </h3>
+
+                        {song.source === "hardcoded" && (
+                          <span className="hardcoded-tag">♛ Fretz Pick</span>
+                        )}
+                      </div>
+
+                      <p>{song.artist}</p>
+                    </div>
+                  </button>
+
+                  <div className="song-actions">
+                    <button
+                      className="song-menu-button"
+                      onClick={() => toggleSongMenu(getSongKey(song))}
+                      aria-label={`Open menu for ${song.title}`}
+                    >
+                      <FiMoreVertical />
+                    </button>
+
+                    {openMenuId === getSongKey(song) && (
+                      <div className="song-menu">
+                        <button onClick={() => handleOpenSong(song)}>
+                          <FiEye />
+                          <span>Open tab</span>
+                        </button>
+
+                        <button onClick={() => handleEditTab(song)}>
+                          <FiEdit3 />
+                          <span>Edit tab</span>
+                        </button>
+
+                        <button onClick={() => handleAddToPlaylist(song)}>
+                          <FiList />
+                          <span>Add to playlist</span>
+                        </button>
+
+                        <button onClick={() => handleTrackProgress(song)}>
+                          <FiTrendingUp />
+                          <span>
+                            {progressBySongId[getSongKey(song)]
+                              ? "View progress"
+                              : "Track progress"}
+                          </span>
+                        </button>
+
+                        <button onClick={() => handlePinToTop(song)}>
+                          <FiStar />
+                          <span>Pin to top</span>
+                        </button>
+
+                        <button onClick={() => handleAddImage(song)}>
+                          <FiImage />
+                          <span>Find album art</span>
+                        </button>
+
+                        <button
+                          className="danger"
+                          onClick={() => removeSong(getSongKey(song))}
+                        >
+                          <FiTrash2 />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )
         ) : (
           <div className="empty-library">
             <FiMusic />
             <h3>
-              {libraryTab === "playlists" ? "No songs in this playlist" : "No tabs saved yet"}
+              {libraryTab === "progress"
+                ? "No songs tracked yet"
+                : libraryTab === "playlists"
+                  ? "No songs in this playlist"
+                  : "No tabs saved yet"}
             </h3>
             <p>
-              {libraryTab === "playlists"
-                ? "Add songs to a playlist from the three-dot menu."
-                : "Search for a song above and add it to your list."}
+              {libraryTab === "progress"
+                ? "Use a song's three-dot menu and choose Track progress."
+                : libraryTab === "playlists"
+                  ? "Add songs to a playlist from the three-dot menu."
+                  : "Search for a song above and add it to your list."}
             </p>
           </div>
         )}
