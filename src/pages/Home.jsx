@@ -1147,14 +1147,14 @@ export default function Home() {
                         <p>{song.artist}</p>
                       </div>
 
-                      <strong className="progress-percent">
+                      {/* <strong className="progress-percent">
                         {progressEntry.percent || 0}%
-                      </strong>
+                      </strong> */}
                     </div>
 
                     <div className="progress-slider-block">
                       <div className="progress-slider-label-row">
-                        <span>Song progress</span>
+                        <span> </span>
                         <span>{progressEntry.percent || 0}% learned</span>
                       </div>
 
@@ -1171,9 +1171,9 @@ export default function Home() {
                       />
 
                       <div className="progress-slider-markers">
-                        <span>Learning</span>
+                        {/* <span>Learning</span>
                         <span>Getting it</span>
-                        <span>Performance ready</span>
+                        <span>Performance ready</span> */}
                       </div>
                     </div>
 
