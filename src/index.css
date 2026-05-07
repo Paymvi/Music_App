@@ -1961,6 +1961,7 @@ body {
 
 .rendered-tab-content {
   overflow-x: auto;
+  overflow-y: hidden;
 
   margin: 0;
   padding: 18px;
@@ -1972,11 +1973,15 @@ body {
 
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   line-height: 1.65;
+
+  white-space: pre;
 }
 
 .rendered-tab-content > div {
   min-height: 1.45em;
-  white-space: pre-wrap;
+  white-space: pre;
+  width: max-content;
+  min-width: 100%;
 }
 
 .rendered-empty-line {
