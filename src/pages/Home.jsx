@@ -20,6 +20,7 @@ import {
 } from "react-icons/fi";
 
 import SongTab from "../components/SongTab";
+import UltimateGuitarImport from "../components/UltimateGuitarImport";
 import { MOCK_SONGS } from "../data/mockSongs";
 
 console.log("MOCK_SONGS loaded:", MOCK_SONGS.map((song) => song.title));
@@ -305,12 +306,13 @@ export default function Home() {
 
   function normalizeImportedSong(song) {
     return {
+      ...song,
       id: song.id || createSongId(song, "imported"),
       title: song.title || "Untitled Song",
       artist: song.artist || "Unknown Artist",
-      tuning: song.tuning || "Standard",
-      difficulty: song.difficulty || "Beginner",
-      capo: song.capo || "No capo",
+      tuning: song.tuning ?? "Standard",
+      difficulty: song.difficulty ?? "Beginner",
+      capo: song.capo ?? "No capo",
       tab: song.tab || `[${song.title || "Untitled Song"}]\n\nAdd your chords or tab here.`,
       imageUrl: getSongImageUrl(song),
       addedAt: song.addedAt || new Date().toISOString(),
@@ -697,13 +699,17 @@ export default function Home() {
       return;
     }
 
+    // Imported arrangements only show metadata the source or user supplied.
+    const keepBlank = editingSong.source === "ultimate-guitar";
+
     updateSongById(getSongKey(editingSong), {
       title: cleanedTitle,
       artist: cleanedArtist,
-      tuning: editForm.tuning.trim() || "Standard",
-      difficulty: editForm.difficulty.trim() || "Beginner",
-      capo: editForm.capo.trim() || "No capo",
-      tab: editForm.tab.trim(),
+      tuning: editForm.tuning.trim() || (keepBlank ? "" : "Standard"),
+      difficulty: editForm.difficulty.trim() || (keepBlank ? "" : "Beginner"),
+      capo: editForm.capo.trim() || (keepBlank ? "" : "No capo"),
+      // Drop blank leading lines only, so a first chord line keeps its indentation.
+      tab: editForm.tab.replace(/^(\s*\n)+/, "").trimEnd(),
       fontSizePx: Number(editForm.fontSizePx) || 14,
       updatedAt: new Date().toISOString(),
     });
@@ -804,6 +810,30 @@ export default function Home() {
     );
 
     setOpenMenuId(null);
+  }
+
+  async function handleImportArrangement(song) {
+    setSavedSongs((currentSongs) => [...currentSongs, song]);
+
+    try {
+      const imageUrl = await fetchAlbumArt(song.title, song.artist);
+      if (imageUrl) updateSongById(song.id, { imageUrl });
+    } catch (error) {
+      console.error("Could not fetch album art:", error);
+    }
+  }
+
+  function handleReplaceArrangement(existingSong, incomingSong) {
+    const { tab, tuning, capo, difficulty, importedAt } = incomingSong;
+
+    updateSongById(getSongKey(existingSong), {
+      tab,
+      importedAt,
+      updatedAt: importedAt,
+      ...(tuning && { tuning }),
+      ...(capo && { capo }),
+      ...(difficulty && { difficulty }),
+    });
   }
 
   function getSongImageUrl(song) {
@@ -991,6 +1021,17 @@ export default function Home() {
         )}
       </section>
 
+      <UltimateGuitarImport
+        savedSongs={savedSongs}
+        onImport={handleImportArrangement}
+        onReplace={handleReplaceArrangement}
+        onOpenSong={(song) =>
+          handleOpenSong(
+            savedSongs.find((savedSong) => getSongKey(savedSong) === getSongKey(song)) || song
+          )
+        }
+      />
+
       <section className="library-section">
         <div className="library-tabs">
           <button
@@ -1142,6 +1183,12 @@ export default function Home() {
                           {song.source === "hardcoded" && (
                             <span className="hardcoded-tag">♛ Fretz Pick</span>
                           )}
+
+                          {song.source === "ultimate-guitar" && (
+                            <span className="source-tag" title="Imported from Ultimate Guitar">
+                            UG{song.sourceArrangementType && ` · ${song.sourceArrangementType}`}
+                          </span>
+                          )}
                         </div>
 
                         <p>{song.artist}</p>
@@ -1260,6 +1307,12 @@ export default function Home() {
 
                         {song.source === "hardcoded" && (
                           <span className="hardcoded-tag">♛ Fretz Pick</span>
+                        )}
+
+                        {song.source === "ultimate-guitar" && (
+                          <span className="source-tag" title="Imported from Ultimate Guitar">
+                            UG{song.sourceArrangementType && ` · ${song.sourceArrangementType}`}
+                          </span>
                         )}
                       </div>
 

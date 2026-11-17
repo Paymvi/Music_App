@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test \"src/**/*.test.js\" \"helper/**/*.test.js\"",
+    "ug-helper": "node helper/ug-helper.mjs"
   },
   "dependencies": {
     "react": "^19.2.5",

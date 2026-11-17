@@ -235,6 +235,10 @@ export default function SongTab({ song, onClose }) {
               {song.source === "hardcoded" && (
                 <span className="hardcoded-tag">♛ Fretz Pick</span>
               )}
+
+              {song.source === "ultimate-guitar" && (
+                <span className="source-tag">Ultimate Guitar</span>
+              )}
             </div>
 
             <p>{song.artist}</p>
@@ -247,10 +251,27 @@ export default function SongTab({ song, onClose }) {
       </div>
 
       <div className="tab-meta">
-        <span>{song.tuning}</span>
-        <span>{song.capo}</span>
-        <span>{song.difficulty}</span>
+        {[song.sourceArrangementType, song.tuning, song.capo, song.difficulty]
+          .filter(Boolean)
+          .map((item, index) => (
+            <span key={index}>{item}</span>
+          ))}
       </div>
+
+      {song.sourceUrl && (
+        <p className="tab-attribution">
+          From{" "}
+          {/* Only link https URLs: sourceUrl can arrive from an imported backup file. */}
+          {/^https:\/\//i.test(song.sourceUrl) ? (
+            <a href={song.sourceUrl} target="_blank" rel="noopener noreferrer">
+              {song.sourceName || "source"}
+            </a>
+          ) : (
+            song.sourceName || "source"
+          )}
+          {song.importedAt && ` · imported ${new Date(song.importedAt).toLocaleDateString()}`}
+        </p>
+      )}
 
       <div className="autoscroll-controls">
         <button className="autoscroll-button" onClick={toggleAutoScroll}>

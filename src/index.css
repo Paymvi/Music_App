@@ -606,6 +606,11 @@ body {
   transform: scale(0.995);
 }
 
+/* The :active transform creates a stacking context; lift the card so its open menu stays above the next card. */
+.saved-song-card:has(.song-menu) {
+  z-index: 1;
+}
+
 .saved-song-card.selected {
   border-color: transparent;
   background: var(--accent-soft);
@@ -2377,4 +2382,249 @@ body {
     flex: 1;
     text-align: center;
   }
+}
+/* ----------------- */
+/* Ultimate Guitar import */
+/* ----------------- */
+.ug-panel {
+  max-width: 860px;
+  width: 100%;
+  margin: 18px auto 0;
+  padding: 0 18px;
+}
+
+.ug-panel h2 {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.ug-note {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.ug-search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ug-search-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.6rem;
+  padding: 0 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  outline: 0;
+
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.ug-search-row button,
+.ug-success .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ug-search-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ug-panel :focus-visible,
+.edit-tab-modal :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ug-success {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 10px;
+  padding: 10px 12px;
+
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 14px;
+
+  color: #bbf7d0;
+  background: rgba(74, 222, 128, 0.08);
+  font-size: 0.82rem;
+}
+
+.ug-success > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.ug-dismiss {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.form-grid.two-column {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.ug-url-hint {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ug-url-hint.warning,
+.ug-error {
+  color: #fca5a5;
+}
+
+.ug-error {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.edit-tab-modal textarea.ug-paste-area {
+  min-height: 280px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.ug-preview-heading h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.ug-preview-heading > p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.ug-preview-heading .tab-meta {
+  margin: 12px 0 0;
+}
+
+.ug-attribution,
+.tab-attribution {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.ug-attribution a,
+.tab-attribution a {
+  color: var(--accent);
+}
+
+.tab-attribution {
+  margin: -8px 0 14px;
+}
+
+.ug-preview-text {
+  max-height: 45dvh;
+  margin-top: 12px;
+}
+
+.ug-duplicate {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 14px;
+  background: rgba(250, 204, 21, 0.06);
+  font-size: 0.85rem;
+}
+
+.ug-duplicate p {
+  margin: 0;
+}
+
+.ug-duplicate .modal-actions {
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.danger-text {
+  color: #fca5a5;
+}
+
+.source-tag {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  padding: 3px 7px;
+  border-radius: 999px;
+
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.14);
+
+  font-size: 0.65rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+@media (max-width: 560px) {
+  .ug-search-row {
+    flex-wrap: wrap;
+  }
+
+  .ug-search-row input {
+    flex-basis: 100%;
+  }
+
+  .ug-search-row button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .form-grid.two-column {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .ug-panel .modal-actions,
+  .edit-tab-modal .modal-actions {
+    flex-wrap: wrap;
+  }
+}
+
+.ug-fetch-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -4px 0 14px;
+}
+
+.ug-fetch-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ug-fetch-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ug-helper-status {
+  color: var(--muted);
+  font-size: 0.75rem;
 }
