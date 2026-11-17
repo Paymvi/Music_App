@@ -173,6 +173,7 @@ e|-----3-----|
 | `playlists` | Your playlists, with copies of the songs in them |
 | `songProgress` | Percent learned and practice notes for each song |
 | `fretzProfile` | Your profile fields |
+| `fretzTheme` | Your light or dark mode choice (dark if missing) |
 
 Your data is not synced between browsers or devices. If you clear this site's data in your browser, it is deleted. Use **Export** to keep a copy.
 

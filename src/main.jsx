@@ -4,6 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from "react-router-dom";
 
+// Apply the saved theme before the first render so the page doesn't flash dark.
+try {
+  if (localStorage.getItem("fretzTheme") === "light") document.documentElement.dataset.theme = "light";
+} catch { /* storage blocked: stay dark */ }
+
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <App />

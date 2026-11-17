@@ -7,7 +7,13 @@ import {
   FiSave,
   FiX,
   FiUser,
+  FiMoon,
+  FiSun,
 } from "react-icons/fi";
+
+function getTheme() {
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
 
 const DEFAULT_PROFILE = {
   displayName: "Fretz Player",
@@ -18,6 +24,18 @@ const DEFAULT_PROFILE = {
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [theme, setTheme] = useState(getTheme);
+
+  function chooseTheme(nextTheme) {
+    if (nextTheme === "light") document.documentElement.dataset.theme = "light";
+    else delete document.documentElement.dataset.theme;
+    try {
+      localStorage.setItem("fretzTheme", nextTheme);
+    } catch {
+      // Storage blocked: the theme still applies for this visit.
+    }
+    setTheme(nextTheme);
+  }
 
   const [profile, setProfile] = useState(() => {
     try {
@@ -146,6 +164,24 @@ export default function Profile() {
             <strong>{fretzPicksCount}</strong>
             <span>Fretz Picks</span>
           </article>
+        </div>
+      </section>
+
+      <section className="profile-stats-section">
+        <div className="profile-section-header">
+          <h2>Appearance</h2>
+          <p>Choose how Fretz looks on this device.</p>
+        </div>
+
+        <div className="theme-switch" role="group" aria-label="Theme">
+          <button type="button" aria-pressed={theme === "dark"} onClick={() => chooseTheme("dark")}>
+            <FiMoon aria-hidden="true" />
+            <span>Dark</span>
+          </button>
+          <button type="button" aria-pressed={theme === "light"} onClick={() => chooseTheme("light")}>
+            <FiSun aria-hidden="true" />
+            <span>Light</span>
+          </button>
         </div>
       </section>
 
