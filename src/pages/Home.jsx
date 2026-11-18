@@ -824,7 +824,7 @@ export default function Home() {
   }
 
   function handleReplaceArrangement(existingSong, incomingSong) {
-    const { tab, tuning, capo, difficulty, importedAt } = incomingSong;
+    const { tab, tuning, capo, difficulty, key, importedAt } = incomingSong;
 
     updateSongById(getSongKey(existingSong), {
       tab,
@@ -832,6 +832,7 @@ export default function Home() {
       updatedAt: importedAt,
       ...(tuning && { tuning }),
       ...(capo && { capo }),
+      ...(key && { key }),
       ...(difficulty && { difficulty }),
     });
   }
@@ -1401,7 +1402,7 @@ export default function Home() {
       </section>
 
       {selectedSong && (
-        <SongTab song={selectedSong} onClose={() => setSelectedSong(null)} />
+        <SongTab key={selectedSong.id} song={selectedSong} onClose={() => setSelectedSong(null)} />
       )}
 
       {editingSong && (

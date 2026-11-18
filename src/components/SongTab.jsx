@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { FiX, FiMusic, FiPlay, FiPause, FiRotateCcw } from "react-icons/fi";
+import { FiX, FiMusic, FiPlay, FiPause, FiRotateCcw, FiMinus, FiPlus } from "react-icons/fi";
 import ChordDiagrams from "./ChordDiagrams";
 import { isChordLine, isChordToken, isNoteLine, isSectionLine, isTabLine } from "../utils/chords";
+import {
+  MAX_TRANSPOSE,
+  clampSemitones,
+  getKeyInfo,
+  loadTranspose,
+  prefersFlats,
+  saveTranspose,
+  transposeTab,
+} from "../utils/transpose";
 
 
 // [Intro]       purple section heading
@@ -133,7 +142,27 @@ export default function SongTab({ song, onClose }) {
   const animationFrameRef = useRef(null);
   const lastTimeRef = useRef(null);
 
-  const tabLines = (song.tab || "").split("\n");
+  const [transpose, setTranspose] = useState(() => loadTranspose(song.id));
+  const { semitones } = transpose;
+  const keyInfo = getKeyInfo(song.key, semitones);
+  const flats = keyInfo ? keyInfo.flats : (transpose.flats ?? prefersFlats(song.tab));
+  // Derived from the untouched original every render, so repeated changes never accumulate.
+  const displayTab = transposeTab(song.tab, semitones, flats);
+  const tabLines = (displayTab || "").split("\n");
+  const offsetLabel = semitones === 0 ? "Original" : semitones > 0 ? `+${semitones}` : `−${-semitones}`;
+  const steps = Math.abs(semitones);
+  const offsetText =
+    semitones === 0 ? "Original key" : `${semitones > 0 ? "Up" : "Down"} ${steps} semitone${steps === 1 ? "" : "s"}`;
+
+  function updateTranspose(changes) {
+    setTranspose((current) => {
+      const next = { ...current, ...changes };
+      if (typeof changes.semitones === "function") next.semitones = changes.semitones(current.semitones);
+      return { ...next, semitones: clampSemitones(next.semitones) };
+    });
+  }
+
+  useEffect(() => saveTranspose(song.id, transpose), [song.id, transpose]);
 
   useEffect(() => {
     if (!isAutoScrolling) {
@@ -310,9 +339,84 @@ export default function SongTab({ song, onClose }) {
           />
           <span>Show chord diagrams</span>
         </label>
+
+        <div className="transpose-control" role="group" aria-labelledby="transpose-label">
+          <span id="transpose-label" className="transpose-label">Transpose</span>
+
+          <strong className="transpose-value" aria-hidden="true">
+            {offsetLabel}
+          </strong>
+
+          <span className="transpose-adjust">
+            <button
+              type="button"
+              className="transpose-step"
+              onClick={() => updateTranspose({ semitones: (value) => value - 1 })}
+              disabled={semitones <= -MAX_TRANSPOSE}
+              aria-label="Down one semitone"
+            >
+              <FiMinus aria-hidden="true" />
+            </button>
+
+            <input
+              type="range"
+              className="transpose-slider"
+              min={-MAX_TRANSPOSE}
+              max={MAX_TRANSPOSE}
+              step="1"
+              value={semitones}
+              onChange={(event) => updateTranspose({ semitones: event.target.value })}
+              aria-label="Transpose in semitones"
+              aria-valuetext={offsetText}
+            />
+
+            <button
+              type="button"
+              className="transpose-step"
+              onClick={() => updateTranspose({ semitones: (value) => value + 1 })}
+              disabled={semitones >= MAX_TRANSPOSE}
+              aria-label="Up one semitone"
+            >
+              <FiPlus aria-hidden="true" />
+            </button>
+          </span>
+
+          {keyInfo && (
+            <span className="transpose-key">
+              Key {keyInfo.original}
+              {semitones !== 0 && (
+                <>
+                  {" → "}
+                  <strong>{keyInfo.transposed}</strong>
+                </>
+              )}
+            </span>
+          )}
+
+          {!keyInfo && semitones % 12 !== 0 && (
+            <span className="transpose-accidentals" role="group" aria-label="Accidental spelling">
+              <button type="button" aria-pressed={!flats} aria-label="Use sharps" onClick={() => updateTranspose({ flats: false })}>
+                ♯
+              </button>
+              <button type="button" aria-pressed={flats} aria-label="Use flats" onClick={() => updateTranspose({ flats: true })}>
+                ♭
+              </button>
+            </span>
+          )}
+
+          <button
+            type="button"
+            className="transpose-reset"
+            onClick={() => updateTranspose({ semitones: 0 })}
+            disabled={semitones === 0}
+            aria-label="Reset to original key"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
-      {showChordDiagrams && <ChordDiagrams song={song} />}
+      {showChordDiagrams && <ChordDiagrams song={{ ...song, tab: displayTab }} />}
 
       {isStyledView ? (
         <div
@@ -326,7 +430,7 @@ export default function SongTab({ song, onClose }) {
           className="tab-content"
           style={{ fontSize: `${song.fontSizePx || 14}px` }}
         >
-          {song.tab}
+          {displayTab}
         </pre>
       )}
     </section>

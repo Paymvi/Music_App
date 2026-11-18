@@ -1,7 +1,7 @@
 // Shared chord-sheet parsing (styled tab view + chord diagrams) and guitar voicings.
 
 // Root is case-sensitive so lyric words like "a" or "am" are not chords.
-const CHORD_TOKEN =
+export const CHORD_TOKEN =
   /^([A-G][#b]?)((?:maj|min|dim|aug|sus|add|M|m|[-+°øΔ]|[#b]?\d{1,2}|\((?:[#b]?\d{1,2},?)+\))*)(?:\/([A-G][#b]?))?$/;
 const NO_CHORD = /^N\.?C\.?$/;
 
@@ -55,7 +55,7 @@ export function extractChords(tab) {
 const LETTER_PC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 const SHARP_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-function pitchClass(note) {
+export function pitchClass(note) {
   const offset = note[1] === "#" ? 1 : note[1] === "b" ? -1 : 0;
   return (LETTER_PC[note[0]] + offset + 12) % 12;
 }

@@ -151,7 +151,7 @@ export default function UltimateGuitarImport({ savedSongs, onImport, onReplace, 
   }
 
   function handleImport() {
-    const song = buildImportedSong(form, parsedUrl);
+    const song = buildImportedSong({ ...form, key: fetched?.key }, parsedUrl);
     onImport(song);
     setLastImported(song);
     setForm(EMPTY_FORM);
@@ -164,7 +164,7 @@ export default function UltimateGuitarImport({ savedSongs, onImport, onReplace, 
     );
     if (!shouldReplace) return;
 
-    onReplace(duplicateSong, buildImportedSong(form, parsedUrl));
+    onReplace(duplicateSong, buildImportedSong({ ...form, key: fetched?.key }, parsedUrl));
     setLastImported(duplicateSong);
     setForm(EMPTY_FORM);
     setIsFormOpen(false);

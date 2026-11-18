@@ -110,6 +110,8 @@ export function buildImportedSong(form, parsedUrl, now = new Date()) {
     tuning: form.tuning.trim(),
     capo: form.capo.trim(),
     difficulty: form.difficulty.trim(),
+    // Only the key the source reports; Fretz never guesses one.
+    key: (form.key || "").trim(),
     tab: cleanPastedTab(form.tab),
     imageUrl: "",
     addedAt: now.toISOString(),
