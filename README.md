@@ -101,6 +101,12 @@ Imported songs work like any other saved song: styled and plain views, auto-scro
   - Inline `[Am]` chords inside lyrics are highlighted too.
   - Everything else is shown as lyrics.
 - **Plain view** shows the raw text.
+- **Show chord diagrams** (the switch in the controls bar under the song details) shows a **Chords** panel above the tab. It is on by default, and your choice is remembered across reloads.
+  - It lists each chord in the song once, in the order it first appears. Chords are taken from chord-only lines and from inline `[Am]` chords. Section labels like `[Intro]`, lyrics, `(notes)` and `e|---|` staff lines are skipped. This is the same line classifier the styled view uses ([src/utils/chords.js](src/utils/chords.js)).
+  - Diagrams are drawn locally as SVG in the current light or dark theme. Strings run from low E on the left to high e on the right. Diagrams show the nut or a starting fret (`5fr`), finger numbers, barres, open (○) and muted (×) strings.
+  - Supported chord types: major, minor, 7, maj7, m7, sus2, sus4, 7sus4, dim, dim7, m7b5 (ø), aug (+), add9, 6, 9 and 5, on any root, including sharps and flats. Slash chords such as `D/F#`, `G/B`, `C/E` or `A/E` show the named bass note as the lowest note. Anything else, such as `Cmaj13` or a slash chord whose bass can't be voiced cleanly (`Gm/Bb`), shows its name with **Diagram unavailable**.
+  - With a capo, the panel notes that fret numbers are relative to the capo.
+  - Diagrams assume standard tuning (E A D G B E). For any other tuning, including half-step down, the panel lists the chord names and explains why it shows no diagrams. A blank tuning is treated as standard.
 - **Auto-scroll** scrolls the page at an adjustable speed from 10 to 120 px/s. It stops by itself at the bottom of the page. **Reset** returns you to the top.
 
 ### Organizing your library
@@ -174,6 +180,7 @@ e|-----3-----|
 | `songProgress` | Percent learned and practice notes for each song |
 | `fretzProfile` | Your profile fields |
 | `fretzTheme` | Your light or dark mode choice (dark if missing) |
+| `fretzShowChordDiagrams` | Whether the Chords panel is shown (shown if missing) |
 
 Your data is not synced between browsers or devices. If you clear this site's data in your browser, it is deleted. Use **Export** to keep a copy.
 
@@ -197,7 +204,9 @@ Cover images then load from Apple's image servers. Fretz has no accounts, analyt
 | `npm test` | Runs unit tests with Node's built-in test runner (`src/**/*.test.js`, `helper/**/*.test.js`) |
 | `npm run ug-helper` | Starts the optional local Ultimate Guitar helper on `127.0.0.1:8787` |
 
-The [React Compiler](https://react.dev/learn/react-compiler) is turned on through Babel in [vite.config.js](vite.config.js). This can make dev and build runs slower. The unit tests cover Ultimate Guitar link parsing, text cleanup and duplicate detection ([src/utils/ultimateGuitar.test.js](src/utils/ultimateGuitar.test.js)), plus the helper's URL allow-list and page extraction ([helper/ugPage.test.js](helper/ugPage.test.js)). They run against synthetic fixtures, not the live site.
+The [React Compiler](https://react.dev/learn/react-compiler) is turned on through Babel in [vite.config.js](vite.config.js). This can make dev and build runs slower. The unit tests cover Ultimate Guitar link parsing, text cleanup and duplicate detection ([src/utils/ultimateGuitar.test.js](src/utils/ultimateGuitar.test.js)), plus the helper's URL allow-list and page extraction ([helper/ugPage.test.js](helper/ugPage.test.js)). They run against synthetic fixtures, not the live site. [src/utils/chords.test.js](src/utils/chords.test.js) covers chord extraction and the diagram data. It checks that every shape for all 12 roots plays exactly the chord's notes with the right bass note, and that its finger numbers are physically playable.
+
+**Chord data.** The fingerings are a small local dataset of standard open shapes and movable E- and A-shape barre chords in [src/utils/chords.js](src/utils/chords.js), written for Fretz, so no third-party attribution is needed. The app also checks each shape's notes at runtime against the chord name before drawing it, so a data mistake shows **Diagram unavailable** instead of a wrong diagram.
 
 ### Project structure
 
@@ -211,7 +220,9 @@ src/
   App.jsx               Routes (/ and /profile) and the bottom tab bar
   pages/Home.jsx        Search, library tabs, playlists, progress, import/export, modals
   pages/Profile.jsx     Profile editor and library stats
-  components/SongTab.jsx  Tab viewer: styled/plain views and auto-scroll
+  components/SongTab.jsx  Tab viewer: styled/plain views, auto-scroll, chord diagram switch
+  components/ChordDiagrams.jsx  Chords panel and SVG chord diagrams
+  utils/chords.js       Tab line classifier, chord extraction, verified guitar voicings
   components/UltimateGuitarImport.jsx  Ultimate Guitar search link, fetch/paste, preview and import form
   utils/ultimateGuitar.js  Link parsing, pasted-text cleanup, duplicate detection
   api/songSearch.js     iTunes song search
@@ -226,6 +237,7 @@ src/
 - **No in-app Ultimate Guitar search.** Search happens on Ultimate Guitar's website, because its `robots.txt` disallows automated search. In-app search would need Ultimate Guitar's permission or an official API.
 - **Fetch text needs the local helper**, works only on the computer running it (not on a phone), and depends on Ultimate Guitar's undocumented page layout and bot protection. When it fails, use manual paste. Interactive (Guitar Pro/Power/Pro) and paid (Official) arrangements cannot be imported either way.
 - **Limited playlist management.** You cannot rename or delete a single playlist. You also cannot remove a song from one playlist on its own: removing a song deletes it from your library and from all playlists. **Delete all** clears everything.
+- **Chord diagrams are guitar-only and standard-tuning-only.** Each chord gets one shape (no alternatives), and extended or altered chords (11, 13, b9, m6, etc.) have no diagram. A chord's name must start with a capital letter (`Am`, not `am`).
 - **Pins are permanent.** There is no way to unpin a song.
 - **Profile is not backed up.** **Export** leaves out your profile, and **Delete all** does not reset it.
 - **Search depends on iTunes.** If the iTunes API cannot be reached, search shows only matching Fretz Picks, or "Could not search songs right now." if none match.

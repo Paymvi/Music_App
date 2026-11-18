@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiX, FiMusic, FiPlay, FiPause, FiRotateCcw } from "react-icons/fi";
+import ChordDiagrams from "./ChordDiagrams";
+import { isChordLine, isChordToken, isNoteLine, isSectionLine, isTabLine } from "../utils/chords";
 
 
 // [Intro]       purple section heading
@@ -7,34 +9,6 @@ import { FiX, FiMusic, FiPlay, FiPause, FiRotateCcw } from "react-icons/fi";
 // (Play softly) muted italic note
 // lyrics        normal white text
 // tab lines     purple mono tab styling
-
-function isChordToken(token) {
-  return /^([A-G](#|b)?(maj|min|m|dim|aug|sus|add)?\d*(\/[A-G](#|b)?)?|N\.?C\.?)$/i.test(
-    token.trim()
-  );
-}
-
-function isChordLine(line) {
-  const trimmedLine = line.trim();
-
-  if (!trimmedLine) return false;
-
-  const tokens = trimmedLine.split(/\s+/);
-
-  return tokens.length > 0 && tokens.every(isChordToken);
-}
-
-function isSectionLine(line) {
-  return /^\s*\[[^\]]+\]\s*$/.test(line);
-}
-
-function isNoteLine(line) {
-  return /^\s*\([^)]*\)\s*$/.test(line);
-}
-
-function isTabLine(line) {
-  return /^\s*[eBGDAE]\|/.test(line) || /^\s*[|/\-0-9hbp~x\s]+$/.test(line);
-}
 
 function renderChordLine(line, lineIndex) {
   const pieces = line.split(/(\s+)/);
@@ -95,7 +69,8 @@ function renderTabLine(line, lineIndex) {
     return <div className="rendered-empty-line" key={lineIndex} />;
   }
 
-  if (isSectionLine(line)) {
+  // A lone "[Am]" is an inline chord (as in extractChords), not a section heading.
+  if (isSectionLine(line) && !isChordToken(line.trim().slice(1, -1))) {
     return (
       <div className="rendered-section-line" key={lineIndex}>
         {line.trim()}
@@ -138,6 +113,22 @@ export default function SongTab({ song, onClose }) {
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(30);
   const [isStyledView, setIsStyledView] = useState(true);
+  const [showChordDiagrams, setShowChordDiagrams] = useState(() => {
+    try {
+      return localStorage.getItem("fretzShowChordDiagrams") !== "false";
+    } catch {
+      return true;
+    }
+  });
+
+  function toggleChordDiagrams(event) {
+    setShowChordDiagrams(event.target.checked);
+    try {
+      localStorage.setItem("fretzShowChordDiagrams", String(event.target.checked));
+    } catch {
+      // Preference just won't persist (e.g. storage blocked).
+    }
+  }
 
   const animationFrameRef = useRef(null);
   const lastTimeRef = useRef(null);
@@ -309,7 +300,19 @@ export default function SongTab({ song, onClose }) {
 
           <strong>{scrollSpeed}</strong>
         </label>
+
+        <label className="chord-toggle">
+          <input
+            type="checkbox"
+            role="switch"
+            checked={showChordDiagrams}
+            onChange={toggleChordDiagrams}
+          />
+          <span>Show chord diagrams</span>
+        </label>
       </div>
+
+      {showChordDiagrams && <ChordDiagrams song={song} />}
 
       {isStyledView ? (
         <div

@@ -2140,6 +2140,119 @@ body {
   background: #facc15;
 }
 
+/* Chord diagrams */
+.chord-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chord-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.chord-panel {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--code-bg);
+}
+
+.chord-panel h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.chord-panel-note {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chord-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.chord-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--chord);
+  font-weight: 800;
+  text-align: center;
+}
+
+.chord-diagram {
+  width: 92px;
+  max-width: 100%;
+  height: auto;
+}
+
+.chord-fret,
+.chord-string {
+  stroke: rgba(var(--fg-rgb), 0.45);
+  stroke-width: 1;
+}
+
+.chord-nut {
+  stroke: var(--text);
+  stroke-width: 3;
+}
+
+.chord-muted,
+.chord-open {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.3;
+}
+
+.chord-dot {
+  fill: var(--text);
+}
+
+.chord-finger {
+  fill: var(--surface);
+  font-size: 7px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.chord-base-fret {
+  fill: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.chord-unavailable {
+  padding: 8px 6px;
+  border: 1px dashed rgba(var(--fg-rgb), 0.25);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
 
 
 
