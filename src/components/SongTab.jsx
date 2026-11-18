@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FiX, FiMusic, FiPlay, FiPause, FiRotateCcw, FiMinus, FiPlus } from "react-icons/fi";
 import ChordDiagrams from "./ChordDiagrams";
-import { isChordLine, isChordToken, isNoteLine, isSectionLine, isTabLine } from "../utils/chords";
+import { classifyLine, isBracketPiece, isChordToken, splitInline } from "../utils/chords";
 import {
   MAX_TRANSPOSE,
   clampSemitones,
@@ -40,10 +40,8 @@ function renderChordLine(line, lineIndex) {
 }
 
 function renderInlineText(line, lineIndex) {
-  const pieces = line.split(/(\[[^\]]+\]|\([^)]*\))/g);
-
-  return pieces.map((piece, pieceIndex) => {
-    if (/^\[[^\]]+\]$/.test(piece)) {
+  return splitInline(line).map((piece, pieceIndex) => {
+    if (isBracketPiece(piece)) {
       const insideBrackets = piece.slice(1, -1);
 
       if (isChordToken(insideBrackets)) {
@@ -74,48 +72,20 @@ function renderInlineText(line, lineIndex) {
 }
 
 function renderTabLine(line, lineIndex) {
-  if (!line.trim()) {
-    return <div className="rendered-empty-line" key={lineIndex} />;
+  switch (classifyLine(line)) {
+    case "empty":
+      return <div className="rendered-empty-line" key={lineIndex} />;
+    case "section":
+      return <div className="rendered-section-line" key={lineIndex}>{line.trim()}</div>;
+    case "note":
+      return <div className="rendered-note-line" key={lineIndex}>{line.trim()}</div>;
+    case "chord":
+      return <div className="rendered-chord-line" key={lineIndex}>{renderChordLine(line, lineIndex)}</div>;
+    case "tab":
+      return <div className="rendered-guitar-tab-line" key={lineIndex}>{line}</div>;
+    default:
+      return <div className="rendered-lyric-line" key={lineIndex}>{renderInlineText(line, lineIndex)}</div>;
   }
-
-  // A lone "[Am]" is an inline chord (as in extractChords), not a section heading.
-  if (isSectionLine(line) && !isChordToken(line.trim().slice(1, -1))) {
-    return (
-      <div className="rendered-section-line" key={lineIndex}>
-        {line.trim()}
-      </div>
-    );
-  }
-
-  if (isNoteLine(line)) {
-    return (
-      <div className="rendered-note-line" key={lineIndex}>
-        {line.trim()}
-      </div>
-    );
-  }
-
-  if (isChordLine(line)) {
-    return (
-      <div className="rendered-chord-line" key={lineIndex}>
-        {renderChordLine(line, lineIndex)}
-      </div>
-    );
-  }
-
-  if (isTabLine(line)) {
-    return (
-      <div className="rendered-guitar-tab-line" key={lineIndex}>
-        {line}
-      </div>
-    );
-  }
-
-  return (
-    <div className="rendered-lyric-line" key={lineIndex}>
-      {renderInlineText(line, lineIndex)}
-    </div>
-  );
 }
 
 export default function SongTab({ song, onClose }) {

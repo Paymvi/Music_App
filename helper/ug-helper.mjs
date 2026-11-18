@@ -25,6 +25,22 @@ async function waitTurn() {
   await new Promise((resolve) => setTimeout(resolve, slot - Date.now()));
 }
 
+// Stops reading at MAX_BYTES even when the server sends no Content-Length (a streamed body).
+async function readCapped(response) {
+  const tooLarge = () => new HelperError(502, "The Ultimate Guitar page was unexpectedly large.");
+  if (Number(response.headers.get("content-length")) > MAX_BYTES) throw tooLarge();
+
+  const chunks = [];
+  let size = 0;
+  // Throwing inside for-await cancels the stream, so the rest is never downloaded.
+  for await (const chunk of response.body ?? []) {
+    size += chunk.byteLength;
+    if (size > MAX_BYTES) throw tooLarge();
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 async function fetchPage(startUrl) {
   let url = startUrl;
 
@@ -55,13 +71,7 @@ async function fetchPage(startUrl) {
       throw new HelperError(502, `Ultimate Guitar refused the request: HTTP ${response.status}${challenge}. Fretz does not retry or work around this.`);
     }
 
-    if (Number(response.headers.get("content-length")) > MAX_BYTES) {
-      throw new HelperError(502, "The Ultimate Guitar page was unexpectedly large.");
-    }
-
-    const html = await response.text();
-    if (html.length > MAX_BYTES) throw new HelperError(502, "The Ultimate Guitar page was unexpectedly large.");
-    return html;
+    return readCapped(response);
   }
 
   throw new HelperError(502, "Too many redirects from Ultimate Guitar.");

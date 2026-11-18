@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { readJson, writeJson } from "../utils/storage";
 import {
   FiEdit3,
   FiMusic,
@@ -14,6 +15,8 @@ import {
 function getTheme() {
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";
 }
+
+const asArray = (value) => (Array.isArray(value) ? value : []);
 
 const DEFAULT_PROFILE = {
   displayName: "Fretz Player",
@@ -37,31 +40,13 @@ export default function Profile() {
     setTheme(nextTheme);
   }
 
-  const [profile, setProfile] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("fretzProfile")) || DEFAULT_PROFILE;
-    } catch {
-      return DEFAULT_PROFILE;
-    }
-  });
+  const [profile, setProfile] = useState(() => readJson("fretzProfile", DEFAULT_PROFILE));
 
   const [profileForm, setProfileForm] = useState(profile);
 
-  const savedSongs = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("savedSongs")) || [];
-    } catch {
-      return [];
-    }
-  }, []);
-
-  const playlists = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("playlists")) || [];
-    } catch {
-      return [];
-    }
-  }, []);
+  // Read once: Home saves these, and Profile only shows counts.
+  const [savedSongs] = useState(() => asArray(readJson("savedSongs", [])));
+  const [playlists] = useState(() => asArray(readJson("playlists", [])));
 
   const fretzPicksCount = savedSongs.filter(
     (song) => song.source === "hardcoded"
@@ -70,7 +55,7 @@ export default function Profile() {
   const pinnedSongsCount = savedSongs.filter((song) => song.pinned).length;
 
   useEffect(() => {
-    localStorage.setItem("fretzProfile", JSON.stringify(profile));
+    writeJson("fretzProfile", profile);
   }, [profile]);
 
   function handleStartEdit() {

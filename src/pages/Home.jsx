@@ -22,13 +22,22 @@ import {
 import SongTab from "../components/SongTab";
 import UltimateGuitarImport from "../components/UltimateGuitarImport";
 import { MOCK_SONGS } from "../data/mockSongs";
+import { createSongId, getSongKey, mergeLibrary, migrateLibrary, readBackup } from "../utils/library";
+import { readJson, writeJson } from "../utils/storage";
+import { TRANSPOSE_STORAGE_KEY, saveTranspose } from "../utils/transpose";
 
-console.log("MOCK_SONGS loaded:", MOCK_SONGS.map((song) => song.title));
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
+// Read once at startup; also converts playlists saved with full song copies to song keys.
+function loadLibrary() {
+  return migrateLibrary(asArray(readJson("savedSongs", [])), asArray(readJson("playlists", [])));
+}
+
+const songTitleKey = (song) => `${song.title}|${song.artist}`.toLowerCase();
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [showSavedCount, setShowSavedCount] = useState(true);
-  const [editingSongKey, setEditingSongKey] = useState(null);
 
   const [libraryTab, setLibraryTab] = useState("songs");
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
@@ -51,15 +60,9 @@ export default function Home() {
   const [isAddSongOpen, setIsAddSongOpen] = useState(false);
 
   const [albumArtBySongId, setAlbumArtBySongId] = useState({});
-  const [loadingArtIds, setLoadingArtIds] = useState([]);
-  
-  const [savedSongs, setSavedSongs] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("savedSongs")) || [];
-    } catch {
-      return [];
-    }
-  });
+
+  const [initialLibrary] = useState(loadLibrary);
+  const [savedSongs, setSavedSongs] = useState(initialLibrary.savedSongs);
 
   const [selectedSong, setSelectedSong] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -78,73 +81,58 @@ export default function Home() {
   const [playlistSong, setPlaylistSong] = useState(null);
   const [playlistName, setPlaylistName] = useState("");
 
-  const [playlists, setPlaylists] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("playlists")) || [];
-    } catch {
-      return [];
-    }
-  });
+  const [playlists, setPlaylists] = useState(initialLibrary.playlists);
 
   const [progressBySongId, setProgressBySongId] = useState(() => {
-    try {
-      const storedProgress = JSON.parse(localStorage.getItem("songProgress")) || {};
-
-      return storedProgress && typeof storedProgress === "object" && !Array.isArray(storedProgress)
-        ? storedProgress
-        : {};
-    } catch {
-      return {};
-    }
+    const storedProgress = readJson("songProgress", {});
+    return typeof storedProgress === "object" && !Array.isArray(storedProgress) ? storedProgress : {};
   });
 
   const [expandedProgressNotes, setExpandedProgressNotes] = useState({});
 
 
   useEffect(() => {
-    localStorage.setItem("savedSongs", JSON.stringify(savedSongs));
+    writeJson("savedSongs", savedSongs);
   }, [savedSongs]);
 
   useEffect(() => {
-    localStorage.setItem("playlists", JSON.stringify(playlists));
+    writeJson("playlists", playlists);
   }, [playlists]);
 
-  useEffect(() => {
-    if (!query.trim()) {
+  function updateQuery(value) {
+    setQuery(value);
+    if (!value.trim()) {
       setSearchResults([]);
       setSearchError("");
-      return;
     }
+  }
+
+  useEffect(() => {
+    if (!query.trim()) return;
 
     const controller = new AbortController();
 
     async function runSongSearch() {
+      const normalizedQuery = query.toLowerCase();
+      const hardcodedResults = MOCK_SONGS.filter(
+        (song) =>
+          song.title.toLowerCase().includes(normalizedQuery) ||
+          song.artist.toLowerCase().includes(normalizedQuery)
+      ).map((song) => ({ ...song, source: "hardcoded", fontSizePx: song.fontSizePx || 14 }));
+
       try {
         setIsSearchingSongs(true);
         setSearchError("");
-
-        const normalizedQuery = query.toLowerCase();
-
-        const hardcodedResults = MOCK_SONGS.filter((song) => {
-          return (
-            song.title.toLowerCase().includes(normalizedQuery) ||
-            song.artist.toLowerCase().includes(normalizedQuery)
-          );
-        }).map((song) => ({
-          ...song,
-          source: "hardcoded",
-          imageUrl: getSongImageUrl(song),
-          fontSizePx: song.fontSizePx || 14,
-        }));
 
         const apiResults = await searchSongs(query, {
           signal: controller.signal,
         });
 
-        const hardcodedIds = new Set(hardcodedResults.map((song) => song.id));
+        // iTunes ids never match built-in ids, so compare by title and artist.
+        const hardcodedKeys = new Set(hardcodedResults.map(songTitleKey));
 
         const uniqueApiResults = apiResults.filter(
-          (song) => !hardcodedIds.has(song.id)
+          (song) => !hardcodedKeys.has(songTitleKey(song))
         );
 
         setSearchResults([...hardcodedResults, ...uniqueApiResults]);
@@ -153,23 +141,9 @@ export default function Home() {
 
         console.error(error);
 
-        const normalizedQuery = query.toLowerCase();
+        setSearchResults(hardcodedResults);
 
-        const fallbackHardcodedResults = MOCK_SONGS.filter((song) => {
-          return (
-            song.title.toLowerCase().includes(normalizedQuery) ||
-            song.artist.toLowerCase().includes(normalizedQuery)
-          );
-        }).map((song) => ({
-          ...song,
-          source: "hardcoded",
-          imageUrl: getSongImageUrl(song),
-          fontSizePx: song.fontSizePx || 14,
-        }));
-
-        setSearchResults(fallbackHardcodedResults);
-
-        if (fallbackHardcodedResults.length === 0) {
+        if (hardcodedResults.length === 0) {
           setSearchError("Could not search songs right now.");
         }
       } finally {
@@ -191,24 +165,18 @@ export default function Home() {
     let isCancelled = false;
 
     async function loadAlbumArtForSearchResults() {
+      // Misses are stored as "" too, so each song is looked up once, not on every re-run.
       const songsMissingArt = searchResults.filter(
-        (song) => !albumArtBySongId[song.id]
+        (song) => !(song.id in albumArtBySongId)
       );
 
       if (songsMissingArt.length === 0) return;
-
-      setLoadingArtIds((currentIds) => [
-        ...new Set([...currentIds, ...songsMissingArt.map((song) => song.id)]),
-      ]);
 
       const results = await Promise.allSettled(
         songsMissingArt.map(async (song) => {
           const imageUrl = await fetchAlbumArt(song.title, song.artist);
 
-          return {
-            songId: song.id,
-            imageUrl,
-          };
+          return { imageUrl };
         })
       );
 
@@ -217,24 +185,13 @@ export default function Home() {
       setAlbumArtBySongId((currentArt) => {
         const updatedArt = { ...currentArt };
 
-        results.forEach((result) => {
-          if (result.status !== "fulfilled") return;
-
-          const { songId, imageUrl } = result.value;
-
-          if (imageUrl) {
-            updatedArt[songId] = imageUrl;
-          }
+        results.forEach((result, index) => {
+          updatedArt[songsMissingArt[index].id] =
+            result.status === "fulfilled" ? result.value.imageUrl : "";
         });
 
         return updatedArt;
       });
-
-      setLoadingArtIds((currentIds) =>
-        currentIds.filter(
-          (id) => !songsMissingArt.some((song) => song.id === id)
-        )
-      );
     }
 
     loadAlbumArtForSearchResults();
@@ -245,7 +202,7 @@ export default function Home() {
   }, [searchResults, albumArtBySongId]);
 
   useEffect(() => {
-    localStorage.setItem("songProgress", JSON.stringify(progressBySongId));
+    writeJson("songProgress", progressBySongId);
   }, [progressBySongId]);
 
 
@@ -265,6 +222,7 @@ export default function Home() {
     setPlaylists([]);
     setSelectedSong(null);
     setProgressBySongId({});
+    writeJson(TRANSPOSE_STORAGE_KEY, {});
     setExpandedProgressNotes({});
     setOpenMenuId(null);
   }
@@ -279,11 +237,12 @@ export default function Home() {
   function handleExportSongs() {
     const backupData = {
       appName: "Fretz",
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       savedSongs,
       playlists,
       progressBySongId,
+      transposeBySongId: readJson(TRANSPOSE_STORAGE_KEY, {}),
     };
 
     const json = JSON.stringify(backupData, null, 2);
@@ -304,40 +263,6 @@ export default function Home() {
     importFileInputRef.current?.click();
   }
 
-  function normalizeImportedSong(song) {
-    return {
-      ...song,
-      id: song.id || createSongId(song, "imported"),
-      title: song.title || "Untitled Song",
-      artist: song.artist || "Unknown Artist",
-      tuning: song.tuning ?? "Standard",
-      difficulty: song.difficulty ?? "Beginner",
-      capo: song.capo ?? "No capo",
-      tab: song.tab || `[${song.title || "Untitled Song"}]\n\nAdd your chords or tab here.`,
-      imageUrl: getSongImageUrl(song),
-      addedAt: song.addedAt || new Date().toISOString(),
-      playlists: Array.isArray(song.playlists) ? song.playlists : [],
-      pinned: Boolean(song.pinned),
-      pinnedAt: song.pinnedAt || "",
-      fontSizePx: Number(song.fontSizePx) || 14,
-      source: song.source || "imported",
-    };
-  }
-
-  function mergeSongs(existingSongs, importedSongs) {
-    const songMap = new Map();
-
-    existingSongs.forEach((song) => {
-      songMap.set(getSongKey(song), song);
-    });
-
-    importedSongs.forEach((song) => {
-      songMap.set(getSongKey(song), song);
-    });
-
-    return Array.from(songMap.values());
-  }
-
   async function handleImportSongs(event) {
     const file = event.target.files?.[0];
 
@@ -347,67 +272,35 @@ export default function Home() {
       const text = await file.text();
       const data = JSON.parse(text);
 
-      const importedSongs = Array.isArray(data.savedSongs)
-        ? data.savedSongs.map(normalizeImportedSong)
-        : Array.isArray(data)
-          ? data.map(normalizeImportedSong)
-          : [];
+      const incoming = readBackup(data);
+      const songCount = incoming.savedSongs.length;
+      const playlistCount = incoming.playlists.length;
 
-      const importedPlaylists = Array.isArray(data.playlists)
-        ? data.playlists
-        : [];
-
-      if (importedSongs.length === 0 && importedPlaylists.length === 0) {
+      if (songCount === 0 && playlistCount === 0) {
         alert("This file does not contain any Fretz songs or playlists.");
         return;
       }
 
       const shouldImport = window.confirm(
-        `Import ${importedSongs.length} song${importedSongs.length === 1 ? "" : "s"} and ${importedPlaylists.length} playlist${importedPlaylists.length === 1 ? "" : "s"}?\n\nSongs with the same ID will be updated.`
+        `Import ${songCount} song${songCount === 1 ? "" : "s"} and ${playlistCount} playlist${playlistCount === 1 ? "" : "s"}?\n\nSongs with the same ID will be updated.`
       );
 
       if (!shouldImport) return;
 
-      setSavedSongs((currentSongs) =>
-        mergeSongs(currentSongs, importedSongs)
+      const merged = mergeLibrary(
+        {
+          savedSongs,
+          playlists,
+          progressBySongId,
+          transposeBySongId: readJson(TRANSPOSE_STORAGE_KEY, {}),
+        },
+        incoming
       );
 
-      setPlaylists((currentPlaylists) => {
-        const playlistMap = new Map();
-
-        currentPlaylists.forEach((playlist) => {
-          playlistMap.set(playlist.id || playlist.name, playlist);
-        });
-
-        importedPlaylists.forEach((playlist) => {
-          const playlistId =
-            playlist.id ||
-            `playlist-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-          playlistMap.set(playlistId, {
-            id: playlistId,
-            name: playlist.name || "Imported Playlist",
-            songs: Array.isArray(playlist.songs)
-              ? playlist.songs.map(normalizeImportedSong)
-              : [],
-            createdAt: playlist.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-        });
-
-        return Array.from(playlistMap.values());
-      });
-
-      if (
-        data.progressBySongId &&
-        typeof data.progressBySongId === "object" &&
-        !Array.isArray(data.progressBySongId)
-      ) {
-        setProgressBySongId((currentProgress) => ({
-          ...currentProgress,
-          ...data.progressBySongId,
-        }));
-      }
+      setSavedSongs(merged.savedSongs);
+      setPlaylists(merged.playlists);
+      setProgressBySongId(merged.progressBySongId);
+      writeJson(TRANSPOSE_STORAGE_KEY, merged.transposeBySongId);
 
       alert("Import complete!");
     } catch (error) {
@@ -525,27 +418,6 @@ export default function Home() {
     });
   }
 
-  function getSongKey(song) {
-    return (
-      song?.id ||
-      `${song?.title || "untitled"}-${song?.artist || "unknown"}`
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "")
-    );
-  }
-  function createSongId(song, prefix = "song") {
-    const title = song?.title || "untitled";
-    const artist = song?.artist || "unknown";
-
-    const slug = `${title}-${artist}`
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-    return `${prefix}-${slug || Date.now()}`;
-  }
-
   async function handleCreateSong(event) {
     event.preventDefault();
 
@@ -619,16 +491,6 @@ export default function Home() {
       )
     );
 
-    setPlaylists((currentPlaylists) =>
-      currentPlaylists.map((playlist) => ({
-        ...playlist,
-        songs: playlist.songs.map((song) =>
-          getSongKey(song) === songId ? { ...song, ...updates } : song
-        ),
-        updatedAt: new Date().toISOString(),
-      }))
-    );
-
     setSelectedSong((currentSong) =>
       currentSong && getSongKey(currentSong) === songId
         ? { ...currentSong, ...updates }
@@ -671,7 +533,6 @@ export default function Home() {
 
   function handleEditTab(song) {
     setEditingSong(song);
-    setEditingSongKey(getSongKey(song));
 
     setEditForm({
       title: song.title || "",
@@ -745,15 +606,11 @@ export default function Home() {
         return currentPlaylists.map((playlist) => {
           if (playlist.id !== existingPlaylist.id) return playlist;
 
-          const alreadyInPlaylist = playlist.songs.some(
-            (song) => getSongKey(song) === getSongKey(playlistSong)
-          );
-
-          if (alreadyInPlaylist) return playlist;
+          if (playlist.songIds.includes(getSongKey(playlistSong))) return playlist;
 
           return {
             ...playlist,
-            songs: [...playlist.songs, playlistSong],
+            songIds: [...playlist.songIds, getSongKey(playlistSong)],
             updatedAt: new Date().toISOString(),
           };
         });
@@ -764,7 +621,7 @@ export default function Home() {
           crypto.randomUUID?.() ||
           `playlist-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         name: cleanedPlaylistName,
-        songs: [playlistSong],
+        songIds: [getSongKey(playlistSong)],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -785,29 +642,12 @@ export default function Home() {
   function handlePinToTop(song) {
     const songKey = getSongKey(song);
 
-    setSavedSongs((currentSongs) => {
-      const updatedSong = {
-        ...song,
-        pinned: true,
-        pinnedAt: new Date().toISOString(),
-      };
+    updateSongById(songKey, { pinned: true, pinnedAt: new Date().toISOString() });
 
-      const songsWithoutPinned = currentSongs.filter(
-        (savedSong) => getSongKey(savedSong) !== songKey
-      );
-
-      return [updatedSong, ...songsWithoutPinned];
-    });
-
-    setSelectedSong((currentSong) =>
-      currentSong && getSongKey(currentSong) === songKey
-        ? {
-            ...currentSong,
-            pinned: true,
-            pinnedAt: new Date().toISOString(),
-          }
-        : currentSong
-    );
+    setSavedSongs((currentSongs) => [
+      ...currentSongs.filter((savedSong) => getSongKey(savedSong) === songKey),
+      ...currentSongs.filter((savedSong) => getSongKey(savedSong) !== songKey),
+    ]);
 
     setOpenMenuId(null);
   }
@@ -879,9 +719,11 @@ export default function Home() {
     setPlaylists((currentPlaylists) =>
       currentPlaylists.map((playlist) => ({
         ...playlist,
-        songs: playlist.songs.filter((song) => getSongKey(song) !== songId),
+        songIds: playlist.songIds.filter((id) => id !== songId),
       }))
     );
+
+    saveTranspose(songId, { semitones: 0, flats: null });
 
     if (selectedSong && getSongKey(selectedSong) === songId) {
       setSelectedSong(null);
@@ -913,7 +755,15 @@ export default function Home() {
     isSystemPlaylist: true,
   };
 
-  const visiblePlaylists = [fretzPickPlaylist, ...playlists];
+  const songsByKey = new Map(savedSongs.map((song) => [getSongKey(song), song]));
+
+  const visiblePlaylists = [
+    fretzPickPlaylist,
+    ...playlists.map((playlist) => ({
+      ...playlist,
+      songs: playlist.songIds.map((id) => songsByKey.get(id)).filter(Boolean),
+    })),
+  ];
 
   const selectedPlaylist =
     visiblePlaylists.find((playlist) => playlist.id === selectedPlaylistId) ||
@@ -963,11 +813,11 @@ export default function Home() {
             type="text"
             placeholder="What do you want to play?"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => updateQuery(event.target.value)}
           />
 
           {query && (
-            <button className="clear-search-button" onClick={() => setQuery("")}>
+            <button className="clear-search-button" onClick={() => updateQuery("")}>
               <FiX />
             </button>
           )}
@@ -1417,10 +1267,7 @@ export default function Home() {
               <button
                 type="button"
                 className="modal-close-button"
-                onClick={() => {
-                  setEditingSong(null);
-                  setEditingSongKey(null);
-                }}
+                onClick={() => setEditingSong(null)}
               >
                 <FiX />
               </button>
@@ -1526,10 +1373,7 @@ export default function Home() {
               <button
                 type="button"
                 className="secondary-button"
-                onClick={() => {
-                  setEditingSong(null);
-                  setEditingSongKey(null);
-                }}
+                onClick={() => setEditingSong(null)}
               >
                 Cancel
               </button>

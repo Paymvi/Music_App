@@ -34,6 +34,8 @@ N.C.
 
 test("ignores section labels, lyrics and notes", () => {
   assert.deepEqual(extractChords("[Verse]\n[Pre-Chorus]\nA day in the life\n(Capo 2, play softly)\n[Bridge 2]"), []);
+  // Brackets inside a (note) render as note text, so they are not chords (same as the viewer and transpose).
+  assert.deepEqual(extractChords("Hello (let it ring [G]) [C]world"), ["C"]);
   assert.deepEqual(extractChords(""), []);
   assert.deepEqual(extractChords(undefined), []);
 });

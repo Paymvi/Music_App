@@ -10,24 +10,35 @@ export function isChordToken(token) {
   return CHORD_TOKEN.test(trimmed) || NO_CHORD.test(trimmed);
 }
 
-export function isChordLine(line) {
-  const trimmedLine = line.trim();
-  return Boolean(trimmedLine) && trimmedLine.split(/\s+/).every(isChordToken);
+function isChordLine(trimmed) {
+  return trimmed.split(/\s+/).every(isChordToken);
 }
 
-export function isSectionLine(line) {
-  return /^\s*\[[^\]]+\]\s*$/.test(line);
-}
-
-export function isNoteLine(line) {
-  return /^\s*\([^)]*\)\s*$/.test(line);
-}
-
-export function isTabLine(line) {
+function isTabLine(line) {
   return /^\s*[eBGDAE]\|/.test(line) || /^\s*[|/\-0-9hbp~x\s]+$/.test(line);
 }
 
-// Distinct chords in order of first appearance, classifying lines the same way the styled view does.
+// The one line classifier for the styled view, chord panel and transpose, so they always agree.
+// Returns "empty" | "section" | "note" | "chord" | "tab" | "lyric".
+export function classifyLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed) return "empty";
+  // A lone "[Am]" line is an inline chord (a lyric line), "[Intro]" is a heading.
+  if (/^\[[^\]]+\]$/.test(trimmed) && !isChordToken(trimmed.slice(1, -1))) return "section";
+  if (/^\([^)]*\)$/.test(trimmed)) return "note";
+  if (isChordLine(trimmed)) return "chord";
+  if (isTabLine(line)) return "tab";
+  return "lyric";
+}
+
+// Splits a lyric line into text, "[Chord]"/"[label]" and "(note)" pieces. Brackets inside a note stay note text.
+export function splitInline(line) {
+  return line.split(/(\[[^\]]+\]|\([^)]*\))/g);
+}
+
+export const isBracketPiece = (piece) => /^\[[^\]]+\]$/.test(piece);
+
+// Distinct chords in order of first appearance, as the styled view shows them.
 export function extractChords(tab) {
   const found = new Set();
   const add = (token) => {
@@ -35,16 +46,9 @@ export function extractChords(tab) {
   };
 
   for (const line of (tab || "").split("\n")) {
-    if (!line.trim() || isNoteLine(line)) continue;
-
-    if (isSectionLine(line)) {
-      // A lone "[Am]" line is an inline chord, "[Intro]" is a heading.
-      add(line.trim().slice(1, -1).trim());
-    } else if (isChordLine(line)) {
-      line.trim().split(/\s+/).forEach(add);
-    } else if (!isTabLine(line)) {
-      for (const match of line.matchAll(/\[([^\]]+)\]/g)) add(match[1].trim());
-    }
+    const kind = classifyLine(line);
+    if (kind === "chord") line.trim().split(/\s+/).forEach(add);
+    if (kind === "lyric") splitInline(line).filter(isBracketPiece).forEach((piece) => add(piece.slice(1, -1).trim()));
   }
 
   return [...found];

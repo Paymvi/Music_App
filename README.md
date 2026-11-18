@@ -125,7 +125,7 @@ To add a song to a playlist, type a new playlist name, or type the name of an ex
 
 ### Backup and profile
 
-- **Export** downloads your saved songs, playlists and progress as `fretz-backup-YYYY-MM-DD.json`.
+- **Export** downloads your saved songs, playlists, progress and per-song transpose settings as `fretz-backup-YYYY-MM-DD.json`. Backups from older versions, where playlists held full song copies, still import.
 - **Import** reads that file back in. It also accepts a plain JSON array of songs. Imported items are merged into your library, and a song or playlist with the same ID as an existing one replaces it.
 - **Delete all** removes every saved song, playlist and progress entry. It asks you to confirm first.
 - The **Profile** page shows your display name, instrument, skill level and bio, which you can edit. It also shows counts of your saved tabs, playlists, pinned songs and Fretz Picks.
@@ -176,11 +176,12 @@ e|-----3-----|
 | Key | Contents |
 | --- | --- |
 | `savedSongs` | Your library, including tab text and metadata |
-| `playlists` | Your playlists, with copies of the songs in them |
+| `playlists` | Your playlists, each a name and a list of song IDs |
 | `songProgress` | Percent learned and practice notes for each song |
 | `fretzProfile` | Your profile fields |
 | `fretzTheme` | Your light or dark mode choice (dark if missing) |
 | `fretzShowChordDiagrams` | Whether the Chords panel is shown (shown if missing) |
+| `fretzTranspose` | Each song's transpose offset and sharp/flat choice, by song ID |
 
 Your data is not synced between browsers or devices. If you clear this site's data in your browser, it is deleted. Use **Export** to keep a copy.
 
@@ -191,7 +192,7 @@ Your data is not synced between browsers or devices. If you clear this site's da
 
 Cover images then load from Apple's image servers. Fretz has no accounts, analytics or backend of its own.
 
-**Ultimate Guitar.** The Fretz page never contacts Ultimate Guitar itself. **Search UG** opens `ultimate-guitar.com/search.php?…` in a new tab, so your search text goes to Ultimate Guitar the same way it would if you typed it on their site, under their privacy policy. When you press **Fetch text**, the app sends the link to the local helper on `127.0.0.1`. The helper then requests that one page from `tabs.ultimate-guitar.com` from your computer's IP address, with no cookies or account. After an import, Fretz sends the song's title and artist to iTunes for album art, as it does for custom songs. Imported songs store these extra fields alongside the usual ones, and they are included in **Export**/**Import** backups: `sourceName`, `sourceUrl`, `sourceArrangementId`, `sourceArrangementType` and `importedAt`. Older backups and libraries without these fields still load unchanged.
+**Ultimate Guitar.** The Fretz page never contacts Ultimate Guitar itself. **Search UG** opens `ultimate-guitar.com/search.php?…` in a new tab, so your search text goes to Ultimate Guitar the same way it would if you typed it on their site, under their privacy policy. When you press **Fetch text**, the app sends the link to the local helper on `127.0.0.1`. The helper then requests that one page from `tabs.ultimate-guitar.com` from your computer's IP address, with no cookies or account. After an import, Fretz sends the song's title and artist to iTunes for album art, as it does for custom songs. Imported songs store these extra fields alongside the usual ones, and they are included in **Export**/**Import** backups: `sourceName`, `sourceUrl`, `sourceArrangementId`, `sourceArrangementType`, `importedAt` and `key` (the song's key, when Ultimate Guitar reports one). Older backups and libraries without these fields still load unchanged.
 
 ## Development
 
@@ -204,7 +205,7 @@ Cover images then load from Apple's image servers. Fretz has no accounts, analyt
 | `npm test` | Runs unit tests with Node's built-in test runner (`src/**/*.test.js`, `helper/**/*.test.js`) |
 | `npm run ug-helper` | Starts the optional local Ultimate Guitar helper on `127.0.0.1:8787` |
 
-The [React Compiler](https://react.dev/learn/react-compiler) is turned on through Babel in [vite.config.js](vite.config.js). This can make dev and build runs slower. The unit tests cover Ultimate Guitar link parsing, text cleanup and duplicate detection ([src/utils/ultimateGuitar.test.js](src/utils/ultimateGuitar.test.js)), plus the helper's URL allow-list and page extraction ([helper/ugPage.test.js](helper/ugPage.test.js)). They run against synthetic fixtures, not the live site. [src/utils/chords.test.js](src/utils/chords.test.js) covers chord extraction and the diagram data. It checks that every shape for all 12 roots plays exactly the chord's notes with the right bass note, and that its finger numbers are physically playable.
+The [React Compiler](https://react.dev/learn/react-compiler) is turned on through Babel in [vite.config.js](vite.config.js). This can make dev and build runs slower. The unit tests cover Ultimate Guitar link parsing, text cleanup and duplicate detection ([src/utils/ultimateGuitar.test.js](src/utils/ultimateGuitar.test.js)), plus the helper's URL allow-list and page extraction ([helper/ugPage.test.js](helper/ugPage.test.js)). They run against synthetic fixtures, not the live site. [src/utils/library.test.js](src/utils/library.test.js) covers backup import and merge, and the move from playlists holding song copies to song IDs. [src/utils/chords.test.js](src/utils/chords.test.js) covers chord extraction and the diagram data. It checks that every shape for all 12 roots plays exactly the chord's notes with the right bass note, and that its finger numbers are physically playable.
 
 **Chord data.** The fingerings are a small local dataset of standard open shapes and movable E- and A-shape barre chords in [src/utils/chords.js](src/utils/chords.js), written for Fretz, so no third-party attribution is needed. The app also checks each shape's notes at runtime against the chord name before drawing it, so a data mistake shows **Diagram unavailable** instead of a wrong diagram.
 
@@ -241,7 +242,6 @@ src/
 - **Pins are permanent.** There is no way to unpin a song.
 - **Profile is not backed up.** **Export** leaves out your profile, and **Delete all** does not reset it.
 - **Search depends on iTunes.** If the iTunes API cannot be reached, search shows only matching Fretz Picks, or "Could not search songs right now." if none match.
-- **Lint currently fails.** `npm run lint` reports 11 errors and 1 warning. Most are unused variables, and the rest are React hooks rules. This does not stop `npm run dev` from running.
 
 ## Troubleshooting
 

@@ -1,5 +1,5 @@
 // Chord transposition. Always derived from the original tab text, so offsets never accumulate.
-import { CHORD_TOKEN, extractChords, isChordLine, isChordToken, isNoteLine, isTabLine, pitchClass } from "./chords.js";
+import { CHORD_TOKEN, classifyLine, extractChords, isBracketPiece, isChordToken, pitchClass, splitInline } from "./chords.js";
 
 export const MAX_TRANSPOSE = 12;
 
@@ -73,7 +73,7 @@ function transposeChordLine(line, shift) {
     .join("");
 }
 
-// Same line classification as the styled view (SongTab), so only rendered chords change.
+// Uses the shared line classifier (classifyLine), so only chords the styled view shows change.
 export function transposeTab(tab, semitones, flats = false) {
   if (!tab || mod12(semitones) === 0) return tab;
   const shift = (chord) => transposeChord(chord.trim(), semitones, flats);
@@ -81,14 +81,13 @@ export function transposeTab(tab, semitones, flats = false) {
   return tab
     .split("\n")
     .map((line) => {
-      if (!line.trim() || isNoteLine(line)) return line;
-      if (isChordLine(line)) return transposeChordLine(line, shift);
-      if (isTabLine(line)) return line;
-      // Section headings, lyrics and (notes) pass through; only [Chord] brackets change.
-      return line
-        .split(/(\[[^\]]+\]|\([^)]*\))/g)
+      const kind = classifyLine(line);
+      if (kind === "chord") return transposeChordLine(line, shift);
+      if (kind !== "lyric") return line;
+      // In lyrics only [Chord] brackets change; text, [labels] and (notes) pass through.
+      return splitInline(line)
         .map((piece) => {
-          if (!/^\[[^\]]+\]$/.test(piece)) return piece;
+          if (!isBracketPiece(piece)) return piece;
           const inside = piece.slice(1, -1);
           return isChordToken(inside) ? `[${inside.replace(inside.trim(), shift(inside))}]` : piece;
         })
@@ -99,7 +98,7 @@ export function transposeTab(tab, semitones, flats = false) {
 
 // ---------- Per-song preference (localStorage, keyed by song id) ----------
 
-const STORAGE_KEY = "fretzTranspose";
+export const TRANSPOSE_STORAGE_KEY = "fretzTranspose";
 const DEFAULT = { semitones: 0, flats: null };
 
 export function clampSemitones(value) {
@@ -109,7 +108,7 @@ export function clampSemitones(value) {
 export function loadTranspose(songId, storage) {
   if (!songId) return DEFAULT;
   try {
-    const saved = JSON.parse((storage ?? globalThis.localStorage).getItem(STORAGE_KEY))?.[songId];
+    const saved = JSON.parse((storage ?? globalThis.localStorage).getItem(TRANSPOSE_STORAGE_KEY))?.[songId];
     if (!saved) return DEFAULT;
     return {
       semitones: clampSemitones(saved.semitones),
@@ -124,10 +123,10 @@ export function saveTranspose(songId, { semitones, flats }, storage) {
   if (!songId) return;
   try {
     const store = storage ?? globalThis.localStorage;
-    const all = JSON.parse(store.getItem(STORAGE_KEY)) || {};
+    const all = JSON.parse(store.getItem(TRANSPOSE_STORAGE_KEY)) || {};
     if (semitones === 0 && flats === null) delete all[songId];
     else all[songId] = { semitones, flats };
-    store.setItem(STORAGE_KEY, JSON.stringify(all));
+    store.setItem(TRANSPOSE_STORAGE_KEY, JSON.stringify(all));
   } catch {
     // Preference just won't persist (e.g. storage blocked).
   }

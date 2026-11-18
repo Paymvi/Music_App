@@ -1,23 +1,10 @@
-import { Routes, Route, NavLink, useNavigate } from "react-router-dom";
+import { Routes, Route, NavLink } from "react-router-dom";
 import "./App.css";
-import { useState, useEffect } from "react";
-
 
 import Profile from "./pages/Profile";
 import Home from "./pages/Home";
 
-
-import { FiSun, FiBarChart2, FiUser } from "react-icons/fi";
-
-// To browse icons:
-// https://react-icons.github.io/react-icons/ 
-
-
-
-
-// to → the route path
-// label → text under icon
-// icon → emoji icon
+import { FiSun, FiUser } from "react-icons/fi";
 
 function TabBar() {
   const tabs = [
@@ -46,7 +33,6 @@ function TabBar() {
 
 
 export default function App() {
-  const [open, setOpen] = useState(false);
   return (
     <div className="app">
       <Routes>
