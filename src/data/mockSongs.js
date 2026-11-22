@@ -55,45 +55,100 @@ Word of the Father, now in flesh appearing;
     difficulty: "Beginner",
     capo: "No capo",
     tab: `
-(Chord chart only. Lyrics are copyrighted; paste your own under each chord line if you like.)
-
 [Intro]
 C  Cmaj7/E  F/C
 C  Cmaj7/E  F/C
 
 [Verse 1]
-(I cast my mind to Calvary...)
-C  Gadd4  Am  F
-C  Gadd4  C
+          C
+I cast my mind to Calvary
+            Gadd4             Am
+Where Jesus bled and died for me
+          F                      C
+I see His wounds, His hands, His feet
+      Gadd4            C
+My Saviour on that cursed tree
 Cmaj7/E  F/C
 
 [Verse 2]
-C  Csus  C  Gadd4  Am
-Fsus2  C  Gadd4  C
+         C         Csus        C
+His body bound and drenched in tears
+              Gadd4     Am
+They laid Him down in Joseph's tomb
+             Fsus2           C
+The entrance sealed by heavy stone
+        Gadd4          C
+Messiah still and all alone
 Cmaj7/E  F/C
 
 [Chorus]
-(O praise the name of the Lord our God...)
-C  F  C  Am  Gsus  G
-C/E  F  Am  F  G  C
+  C                      F        C
+O praise the Name of the Lord our God
+  Am                 Gsus G
+O praise His Name forever-more
+    C/E                  F         Am
+For endless days we will sing Your praise
+   F        G        C
+Oh Lord, oh Lord our God
 Cmaj7/E  F/C
 
 [Verse 3]
-(Then on the third at break of dawn...)
-C  Gadd4  Am  F
-C  Gsus  G  C
+C
+Then on the third at break of dawn
+           Gadd4        Am
+The Son of heaven rose again
+           F                    C
+O trampled death, where is your sting?
+           Gsus G              C
+The angels roar for Christ the King
 
 [Chorus]
+  C                      F        C
+O praise the Name of the Lord our God
+  Am                 Gsus G
+O praise His Name forever-more
+    C/E                  F         Am
+For endless days we will sing Your praise
+   F        G        C
+Oh Lord, oh Lord our God
 
 [Verse 4]
-C  Gadd4  Am  F
-C  G  C
+           C
+He shall return in robes of white
+            Gadd4                Am
+The blazing sun shall pierce the night
+           F              C
+And I will rise among the saints
+             G               C
+My gaze transfixed on Jesus' face
+
+[Chorus]
+  C                      F        C
+O praise the Name of the Lord our God
+  Am                 Gsus G
+O praise His Name forever-more
+    C/E                  F         Am
+For endless days we will sing Your praise
+   F        G        C
+Oh Lord, oh Lord our God
 
 [Instrumental]
 C  F  C  Am  Gsus  G
 C/E  F  Am  F  G  C
 
-[Chorus]`,
+[Chorus]
+  C                      F        C
+O praise the Name of the Lord our God
+  Am                 Gsus G
+O praise His Name forever-more
+    C/E                  F         Am
+For endless days we will sing Your praise
+   F        G        C
+Oh Lord, oh Lord our God
+
+[Tag]
+   F        G        C
+Oh Lord, oh Lord our God`,
   },
   {
     id: "o-holy-night",
@@ -104,6 +159,7 @@ C/E  F  Am  F  G  C
     difficulty: "Intermediate",
     capo: "No capo",
     tab: `
+
 [Verse 1]
   E               A                  E
 O holy night, the stars are brightly shining,
@@ -113,9 +169,9 @@ E                     A             E
 Long lay the world in sin and error pining,
           G#m            D#7           G#m
 Till He appeared and the soul felt its worth.
-  B7                                E
+  B7                  E
 A thrill of hope, the weary world rejoices,
-           B7                        E
+           B7       E
 For yonder breaks a new and glorious morn.
 
 [Chorus]
@@ -135,13 +191,13 @@ E                              A            E
 Chains shall He break, for the slave is our brother;
            G#m        D#7            G#m
 And in His name all oppression shall cease.
-      B7                              E
+      B7              E
 Sweet hymns of joy in grateful chorus raise we,
-            B7                    E
+    B7            E
 Let all within us praise His holy name.
 
 [Chorus 2]
-C#m           G#m     F#m        C#m
+C#m           G#m     F#m                C#m
 Christ is the Lord! O praise His name forever,
     E         B7    E           A   E
 His power and glory evermore proclaim!
@@ -157,50 +213,121 @@ His power and glory evermore proclaim!`,
     difficulty: "Beginner",
     capo: "No capo",
     tab: `
-(Chord chart only. Lyrics are copyrighted; paste your own under each chord line if you like.)
-
 [Intro]
 B
 G#m  F#  E  B
 
 [Verse 1]
-(Before I spoke a word...)
-G#m  F#  E
-G#m  F#  E
-G#m  F#  E
-G#m  F#  E
+G#m              F#             E
+Before I spoke a word, You were singing over me
+G#m           F#     E
+You have been so, so good to me
+G#m             F#                       E
+Before I took a breath, You breathe your life in me
+G#m           F#     E
+You have been so, so good to me
 
 [Chorus]
-(Oh, the overwhelming, never-ending...)
-G#m  F#  E  B
-G#m  F#  E  B
-G#m  F#  E  B
-G#m  F#  E  B
+        G#m           F#            E                B
+Oh, the overwhelming, never-ending, reckless love of God
+       G#m             F#                     E          B
+Oh, it chases me down, fights 'til I'm found, leaves the 99
+           G#m            F#                       E                  B
+I couldn't earn it, and I don't deserve it, still, You give yourself away
+        G#m           F#            E                B
+Oh, the overwhelming, never-ending, reckless love of God, yeah
 
 [Interlude]
 G#m  F#  E  B
 
 [Verse 2]
-(When I was Your foe...)
-G#m  F#  E
-G#m  F#  E
-G#m  F#  E
-G#m  F#  E
+G#m             F#                   E
+When I was your foe, still Your love fought for me
+G#m           F#     E
+You have been so, so good to me
+G#m            F#                 E
+When I felt no worth, You paid it all for me
+G#m           F#     E
+You have been so, so kind to me
 
 [Chorus]
+            G#m           F#            E                B
+And oh, the overwhelming, never-ending, reckless love of God
+       G#m             F#                     E          B
+Oh, it chases me down, fights 'til I'm found, leaves the 99
+           G#m            F#                       E                  B
+I couldn't earn it, and I don't deserve it, still, You give yourself away
+        G#m           F#            E                B
+Oh, the overwhelming, never-ending, reckless love of God, yeah
 
 [Interlude]
+G#m  F#  E  B
 
 [Bridge]
-(There's no shadow You won't light up...)
-G#m  F#
-E  B
-G#m  F#
-E  B
+G#m                         F#
+There's no shadow You won't light up
+                    E
+Mountain, You won't climb up
+             B
+Coming after me
+G#m                       F#
+There's no wall You won't kick down
+              E
+Lie You won't tear down
+             B
+Coming after me
+
+[Bridge]
+G#m                         F#
+There's no shadow You won't light up
+                    E
+Mountain, You won't climb up
+             B
+Coming after me
+G#m                       F#
+There's no wall You won't kick down
+              E
+Lie You won't tear down
+             B
+Coming after me
+
+[Bridge]
+G#m                         F#
+There's no shadow You won't light up
+                    E
+Mountain, You won't climb up
+             B
+Coming after me
+G#m                       F#
+There's no wall You won't kick down
+              E
+Lie You won't tear down
+             B
+Coming after me
+
+[Bridge]
+G#m                         F#
+There's no shadow You won't light up
+                    E
+Mountain, You won't climb up
+             B
+Coming after me
+G#m                       F#
+There's no wall You won't kick down
+              E
+Lie You won't tear down
+             B
+Coming after me
 
 [Chorus]
-
-[Interlude]`,
+        G#m           F#            E                B
+Oh, the overwhelming, never-ending, reckless love of God
+       G#m             F#                     E          B
+Oh, it chases me down, fights 'til I'm found, leaves the 99
+           G#m            F#                       E                  B
+I couldn't earn it, and I don't deserve it, still, You give yourself away
+        G#m           F#            E                B
+Oh, the overwhelming, never-ending, reckless love of God, yeah`,
   },
   {
     id: "it-is-well",
@@ -272,49 +399,130 @@ Even so, it is well with my soul.
     difficulty: "Beginner",
     capo: "No capo",
     tab: `
-(Chord chart only. Lyrics are copyrighted; paste your own under each chord line if you like.)
-
 [Intro]
 B  B  G#m  G#m
 F#  F#  E  E
 
 [Verse 1]
-(All my words fall short...)
-B  G#m  F#  E
+       B
+All my words fall short
+      G#m
+I got nothing new
+          F#
+How could I express
+       E
+All my gratitude?
 
 [Verse 2]
-(I could sing these songs...)
-B  G#m  F#  E
+        B
+I could sing these songs
+     G#m
+As I often do
+          F#
+But every song must end
+        E
+And You never do
 
 [Chorus]
-(So I throw up my hands...)
-B  F#  E  G#m  F#
-B  F#  E  G#m  F#  B
+     B
+So I throw up my hands
+                          F#
+And praise You again and again
+                                 E
+'Cause all that I have is a hallelujah
+G#m  F#
+Hallelujah
+      B
+And I know it's not much
+                                F#
+But I've nothing else fit for a King
+                                E
+Except for a heart singing hallelujah
+G#m    F#  B
+Hallelujah
 
 [Verse 3]
-(I've got one response...)
-B  G#m  F#  E
+         B
+I've got one response
+         G#m
+I've got just one move
+        F#
+With my arm stretched wide
+       E
+I will worship You
 
 [Chorus]
+     B
+So I throw up my hands
+                          F#
+And praise You again and again
+                                 E
+'Cause all that I have is a hallelujah
+G#m  F#
+Hallelujah
+      B
+And I know it's not much
+                                F#
+But I've nothing else fit for a King
+                                E
+Except for a heart singing hallelujah
+G#m    F#  B
+Hallelujah
 
 [Channel]
 B  B  B  B
 B  B  B  B
 
 [Bridge]
-(Come on, my soul...)
+   B
+So come on, my soul
+Oh, don't you get shy on me
+Lift up your song
+'Cause you've got a lion inside of those lungs
+Get up and praise the Lord
+
+    B
+Oh, come on, my soul
+Oh, don't you get shy on me
+F#
+Lift up your song
+                           E
+'Cause you've got a lion inside of those lungs
+                      B    F#
+Get up and praise the Lord
+
 B
-B  F#  E  B  F#
-B  F#  E  G#m  F#
+Come on, my soul
+Oh, don't you get shy on me
+F#
+Lift up your song
+                           E
+'Cause you've got a lion inside of those lungs
+                      G#m       F#
+Get up and praise the Lord, hey
 
 [Channel 2]
-(x5)
+(x5, with "Praise the Lord" called out over it)
 E  E  G#m  F#
 E  E  E  E
 
-[Alt Chorus]
-B  F#m  E  Em
-B  F#m  E  Em  B`,
+[Final Chorus]
+     B
+So I throw up my hands
+                      F#m
+Praise You again and again
+                                 E
+'Cause all that I have is a hallelujah
+Em
+Hallelujah
+      B
+And I know it's not much
+                                F#m
+But I've nothing else fit for a King
+                                E
+Except for a heart singing hallelujah
+Em     B
+Hallelujah`,
   },
   {
     id: "silent-night",

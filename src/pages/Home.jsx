@@ -940,6 +940,15 @@ export default function Home() {
           <div className="library-actions">
             <button
               className="library-action-button"
+              onClick={() => MOCK_SONGS.forEach((song) => addSong({ ...song, source: "hardcoded" }))}
+              disabled={MOCK_SONGS.every((song) => isSongSaved(getSongKey(song)))}
+              title="Add every Fretz Pick to My Songs"
+            >
+              ♛ Add Fretz Picks
+            </button>
+
+            <button
+              className="library-action-button"
               onClick={handleImportButtonClick}
             >
               Import
